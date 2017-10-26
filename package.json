@@ -1,0 +1,24 @@
+{
+  "name": "galax.io",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "express": "^4.16.2",
+    "socket.io": "^2.0.4"
+  },
+  "main": "App.js",
+  "scripts": {
+    "start": "node App.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MisterRee/Galax.io.git"
+  },
+  "author": "Danny Lee",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MisterRee/Galax.io/issues"
+  },
+  "homepage": "https://github.com/MisterRee/Galax.io#readme"
+}
