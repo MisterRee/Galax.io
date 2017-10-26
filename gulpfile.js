@@ -1,11 +1,14 @@
 var gulp = require( 'gulp' ),
     notify = require( 'gulp-notify' ),
     rename = require('gulp-rename'),
-    streamify = require('gulp-streamify'),
     uglify = require( 'gulp-uglify' ),
+
+    babel = require( 'babelify' ),
     browserify = require( 'browserify' ),
+    del = require( 'del' ),
+    buffer = require( 'vinyl-buffer' ),
     source = require( 'vinyl-source-stream' ),
-    del = require( 'del' );
+    watchify = require('watchify');
 
 // deletes the old compiled file if it exists, for security's sake
 gulp.task( 'clean', function(){
@@ -14,11 +17,12 @@ gulp.task( 'clean', function(){
 
 // compiling script
 gulp.task( 'build', ['clean'], function(){
-  var bundleStream = browserify( './src/render.js' ).bundle();
-
-  bundleStream
-    .pipe( source( ( 'render.js' ) ) )
-    .pipe( streamify( uglify() ) )
+  return browserify( './src/render.js' )
+    .transform( "babelify", { presets: ["env"] } )
+    .bundle()
+    .pipe( source( 'render.js' ) )
+    .pipe( buffer() )
+    .pipe( uglify() )
     .pipe( rename( 'bundle.min.js' ) )
     .pipe( gulp.dest( './public' ) )
 });
@@ -28,4 +32,4 @@ gulp.task( 'watch', function(){
   gulp.watch( './src/*', ['build'] );
 });
 
-gulp.task( 'default', ['build'] );
+gulp.task( 'default', ['watch'] );

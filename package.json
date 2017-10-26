@@ -3,15 +3,19 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
+    "express": "^4.16.2",
+    "socket.io": "^2.0.4"
+  },
+  "devDependencies": {
+    "babel-preset-env": "^1.6.1",
+    "babelify": "^8.0.0",
     "browserify": "^14.5.0",
     "del": "^3.0.0",
-    "express": "^4.16.2",
     "gulp": "^3.9.1",
     "gulp-notify": "^3.0.0",
     "gulp-rename": "^1.2.2",
-    "gulp-streamify": "^1.0.2",
     "gulp-uglify": "^3.0.0",
-    "socket.io": "^2.0.4",
+    "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
   },
   "main": "App.js",
