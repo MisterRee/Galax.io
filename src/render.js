@@ -13,7 +13,6 @@ const serverConnect = function(){
 
   // declaring socket functions here
   socket.on( 'connect', function(){
-    //textarea.value = 'Welcome to the chatroom';
     socket.emit( 'join', 'Hello from the Client-side' );
   });
 
@@ -24,14 +23,13 @@ const serverConnect = function(){
   connection = true;
 };
 
+// Prompting server to send message to everyone in the room
 const postMessage = function(){
   if( !connection || !writebox.value ){
     return;
   };
 
-  console.log( "sending " + writebox.value );
-
-  socket.emit( 'post-message', { value: writebox.value } );
+  socket.emit( 'post-message', { sender: userID, value: writebox.value } );
   writebox.value = "";
 };
 
@@ -42,12 +40,14 @@ const init = function(){
   writebox = document.querySelector( '#writebox' );
   sendbox =  document.querySelector( '#sendbox' );
 
+  textarea.value = ""; // Fix from browser tab duplicating
   serverConnect();
 
   // For enter key event
   function handle( e ){
+    // This causes any key to type into the chatbox without having to manually refocus after each enter press
     writebox.focus();
-    
+
     if( e.keyCode == 13 ){
       postMessage();
     }
