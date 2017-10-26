@@ -1,3 +1,5 @@
+// Controller module, 'Main' server script
+
 const express = require( 'express' );
 const App = express();
 const server = require( 'http' ).createServer( App );
@@ -11,9 +13,21 @@ App.get( '/', function( req, res ){
 });
 
 // Function which is called when a connection is made to this server
-// All functions which the client requires is declared within this function
-io.on( 'connection', function(){
+// All handshakes required with the client is declared within this function
+io.on( 'connection', function( client ){
   console.log( 'Client connected!' );
+
+  client.on( 'join', function( data ){
+    console.log( data );
+    client.join( 0 );
+    client.broadcast.to( 0 ).emit( 'get-message', "Someone has joined the chatroom" );
+  });
+
+  client.on( 'post-message', function( data ){
+    console.log( data );
+    client.emit( 'get-message', data.value );
+    client.broadcast.to( 0 ).emit( 'get-message', data.value );
+  });
 });
 
 server.listen( 3000 );

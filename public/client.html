@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset "utf-8">
+    <link rel="stylesheet" href="./style.css"></link>
   </head>
   <body>
+    <textarea disabled></textarea>
+		<input id="writebox" name="message" type="text"/>
+		<input id="sendbox" type="button" value="send"/>
     <canvas></canvas>
   </body>
-  <script src="bundle.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="./bundle.min.js"></script>
 </html>

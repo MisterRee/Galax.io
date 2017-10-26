@@ -1,3 +1,4 @@
+// install devDependencies prior to running
 var gulp = require( 'gulp' ),
     notify = require( 'gulp-notify' ),
     rename = require('gulp-rename'),
