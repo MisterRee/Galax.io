@@ -2,6 +2,7 @@
 let socket,
     textarea, writebox, sendbox, cvs, ctx;
 let connection = false;
+let userID;
 
 // Method which handles server connection setup
 const serverConnect = function(){
@@ -16,7 +17,12 @@ const serverConnect = function(){
     socket.emit( 'join', 'Hello from the Client-side' );
   });
 
+  socket.on( 'set-ID', function( data ){
+    userID = data;
+  });
+
   socket.on( 'get-message', function( data ){
+    console.log( data );
     textarea.value += '\n' + data;
   });
 
@@ -39,6 +45,9 @@ const init = function(){
   textarea = document.querySelector( 'textarea' );
   writebox = document.querySelector( '#writebox' );
   sendbox =  document.querySelector( '#sendbox' );
+
+  // Setting some css
+  textarea.style.width = window.innerWidth + "px";
 
   textarea.value = ""; // Fix from browser tab duplicating
   serverConnect();

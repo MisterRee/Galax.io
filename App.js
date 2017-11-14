@@ -22,9 +22,10 @@ io.on( 'connection', function( client ){
   client.on( 'join', function( data ){
     client.join( 0 ); // TODO: seperate rooms
 
-    // Generating userID
+    // Generating userID TODO: create better id tag generation for users
     client.userID = userJoinCount;
     userList.push( userJoinCount );
+    client.emit( 'set-ID', userJoinCount );
     userJoinCount++;
 
     // Entry feedback

@@ -1,7 +1,7 @@
 // install devDependencies prior to running
 var gulp = require( 'gulp' ),
     notify = require( 'gulp-notify' ),
-    rename = require('gulp-rename'),
+    rename = require( 'gulp-rename' ),
     uglify = require( 'gulp-uglify' ),
 
     babel = require( 'babelify' ),
@@ -9,7 +9,9 @@ var gulp = require( 'gulp' ),
     del = require( 'del' ),
     buffer = require( 'vinyl-buffer' ),
     source = require( 'vinyl-source-stream' ),
-    watchify = require('watchify');
+
+    spawn = require( 'child_process' ).spawn, // child_process is from node
+    node;
 
 // deletes the old compiled file if it exists, for security's sake
 gulp.task( 'clean', function(){
@@ -28,9 +30,21 @@ gulp.task( 'build', ['clean'], function(){
     .pipe( gulp.dest( './public' ) )
 });
 
+// restart npm server after building gulp
+gulp.task( 'server', function(){
+  if ( node ) node.kill; // restart any running servers
+
+  node = spawn( 'node', ['App.js'], { stdio: 'inherit' });
+  node.on( 'close', function ( code ){
+    if( code === 8 ){
+      gulp.log( 'Error detected, waiting for changes...' );
+    };
+  });
+});
+
 // Runs tests on any file changes in js/ folder
 gulp.task( 'watch', function(){
-  gulp.watch( './src/*', ['build'] );
+  gulp.watch( ['./App.js', './src/*'], ['build', 'server'] );
 });
 
 gulp.task( 'default', ['watch'] );
