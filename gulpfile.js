@@ -47,4 +47,9 @@ gulp.task( 'watch', function(){
   gulp.watch( ['./App.js', './src/*'], ['build', 'server'] );
 });
 
-gulp.task( 'default', ['watch'] );
+gulp.task( 'default', ['watch', 'server'] );
+
+// Clean method for errors
+process.on( 'exit', function(){
+  if ( node ) node.kill
+});

@@ -14,19 +14,14 @@ const serverConnect = function(){
 
   // declaring socket functions here
   socket.on( 'connect', function(){
-    socket.emit( 'join', 'Hello from the Client-side' );
-  });
-
-  socket.on( 'set-ID', function( data ){
-    userID = data;
+    connection = true;
+    document.querySelector( '#loader-wrapper' ).classList += "loaded";
+    socket.emit( 'join' );
   });
 
   socket.on( 'get-message', function( data ){
-    console.log( data );
     textarea.value += '\n' + data;
   });
-
-  connection = true;
 };
 
 // Prompting server to send message to everyone in the room
@@ -46,10 +41,21 @@ const init = function(){
   writebox = document.querySelector( '#writebox' );
   sendbox =  document.querySelector( '#sendbox' );
 
-  // Setting some css
-  textarea.style.width = window.innerWidth + "px";
+  const resize = function(){
+    // Setting some css
+    let width = window.innerWidth
+             || document.documentElement.clientWidth
+             || document.body.clientWidth;
 
-  textarea.value = ""; // Fix from browser tab duplicating
+    textarea.style.width = width + "px";
+  };
+
+  // Dynamic styles
+  resize();
+  window.onresize = resize;
+
+  // Fix from browser tab duplicating
+  textarea.value = "";
   serverConnect();
 
   // For enter key event
@@ -65,6 +71,16 @@ const init = function(){
   // Adding events for keyboard and pressing enter for the chat
   sendbox.addEventListener( 'click', postMessage, false );
   document.addEventListener( 'keypress', handle, false );
+};
+
+const userIDprompt = function(){
+  let value = prompt( "Enter a username: ", "Your Username" );
+  if( !prompt ){
+    userIDprompt();
+  };
+
+  userID = value;
+  init();
 };
 
 window.onload = init;

@@ -5,10 +5,18 @@
     <link rel="stylesheet" href="./style.css"></link>
   </head>
   <body>
-    <textarea disabled></textarea>
-		<input id="writebox" name="message" type="text"/>
-		<input id="sendbox" type="button" value="send"/>
-    <canvas></canvas>
+    <div id="loader-wrapper">
+      <div id="loader"></div>
+      <div class="loader-slider" id="slider-left"></div>
+      <div class="loader-slider" id="slider-right"></div>
+    </div>
+    
+    <div id="ready">
+      <textarea disabled></textarea>
+  		<input id="writebox" name="message" type="text"/>
+  		<input id="sendbox" type="button" value="send"/>
+      <canvas></canvas>
+    </div>
   </body>
   <script src="/socket.io/socket.io.js"></script>
   <script src="./bundle.min.js"></script>

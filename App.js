@@ -19,13 +19,12 @@ App.get( '/', function( req, res ){
 io.on( 'connection', function( client ){
   console.log( 'Client connected!' );
 
-  client.on( 'join', function( data ){
+  client.on( 'join', function(){
     client.join( 0 ); // TODO: seperate rooms
 
     // Generating userID TODO: create better id tag generation for users
     client.userID = userJoinCount;
     userList.push( userJoinCount );
-    client.emit( 'set-ID', userJoinCount );
     userJoinCount++;
 
     // Entry feedback
