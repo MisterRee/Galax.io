@@ -1,22 +1,47 @@
 // View Module
-let socket,
-    textarea, writebox, sendbox, cvs, ctx;
+
+ // Engines
+let socket, cvs, ctx;
+
+ // HTML Elements & UI References
+let textarea, cWritebox, cSendbox, pWritebox, pSendbox;
+
+ // Mechanics
 let connection = false;
 let userID;
 
-// Method which handles server connection setup
+ // Starts socket engine
 const serverConnect = function(){
   if( connection ){ //If true, connection is already made
     return;
+  }
+
+  // Prompt Setup
+  pWritebox = document.querySelector( '#prompt-writebox' );
+  pSendbox =  document.querySelector( '#prompt-sendbox'  );
+
+  const sendPrompt = function(){
+    const data = pWritebox.value;
+    socket.emit( 'join', data );
   };
+
+  pSendbox.addEventListener( 'click', sendPrompt, false );
 
   socket = io.connect();
 
-  // declaring socket functions here
   socket.on( 'connect', function(){
     connection = true;
     document.querySelector( '#loader-wrapper' ).classList += "loaded";
-    socket.emit( 'join' );
+  });
+
+  socket.on( 'input-reprompt', function(){
+    pWritebox.value = "";
+    // TODO: User feedback that name already exists in active array
+  });
+
+  socket.on( 'start', function(){
+    console.log( "recieved" );
+    document.querySelector( '#prompt-wrapper' ).classList += "done";
   });
 
   socket.on( 'get-message', function( data ){
@@ -26,53 +51,59 @@ const serverConnect = function(){
 
 // Prompting server to send message to everyone in the room
 const postMessage = function(){
-  if( !connection || !writebox.value ){
+  if( cWritebox.value ){
     return;
-  };
+  }
 
-  socket.emit( 'post-message', { sender: userID, value: writebox.value } );
-  writebox.value = "";
+  socket.emit( 'post-message', { sender: userID, value: cWritebox.value } );
+  cWritebox.value = "";
 };
 
+// Connects HTML Element references, setup dynamic CSS, setup event handlers
 const init = function(){
   cvs = document.querySelector( 'canvas' );
   ctx = cvs.getContext( '2d' );
-  textarea = document.querySelector( 'textarea' );
-  writebox = document.querySelector( '#writebox' );
-  sendbox =  document.querySelector( '#sendbox' );
+  textarea  = document.querySelector( '#chatbox' );
+  cWritebox = document.querySelector( '#chat-writebox' );
+  cSendbox  = document.querySelector( '#chat-sendbox'  );
 
+  // Dynamic CSS value resets
   const resize = function(){
-    // Setting some css
     let width = window.innerWidth
              || document.documentElement.clientWidth
              || document.body.clientWidth;
-
     textarea.style.width = width + "px";
   };
 
-  // Dynamic styles
   resize();
   window.onresize = resize;
 
-  // Fix from browser tab duplicating
+  // Fix for browser tab duplicating
   textarea.value = "";
-  serverConnect();
 
   // For enter key event
   function handle( e ){
-    // This causes any key to type into the chatbox without having to manually refocus after each enter press
-    writebox.focus();
+    if( connection ){
 
-    if( e.keyCode == 13 ){
-      postMessage();
+    } else {
+      // This causes any key to type into the chatbox without having to manually refocus after each enter press
+      writebox.focus();
+
+      if( e.keyCode == 13 ){
+        postMessage();
+      }
     }
   };
 
   // Adding events for keyboard and pressing enter for the chat
-  sendbox.addEventListener( 'click', postMessage, false );
+  cSendbox.addEventListener( 'click', postMessage, false );
   document.addEventListener( 'keypress', handle, false );
+
+  // Start socket engine
+  serverConnect();
 };
 
+/*
 const userIDprompt = function(){
   let value = prompt( "Enter a username: ", "Your Username" );
   if( !prompt ){
@@ -82,5 +113,6 @@ const userIDprompt = function(){
   userID = value;
   init();
 };
+*/
 
 window.onload = init;

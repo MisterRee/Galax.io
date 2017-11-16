@@ -5,7 +5,7 @@ const server = require( 'http' ).createServer( App );
 const io = require( 'socket.io' )( server );
 
 let userList = [];
-let userJoinCount = 0;
+let userJoinCount = 0; // Total joined user tally
 
 // Routing stuff
 App.use( express.static( __dirname + '/public' ) );
@@ -19,17 +19,28 @@ App.get( '/', function( req, res ){
 io.on( 'connection', function( client ){
   console.log( 'Client connected!' );
 
-  client.on( 'join', function(){
-    client.join( 0 ); // TODO: seperate rooms
+  client.on( 'set-input', function(){
+    client.status = "prompting";
+    //client.emit( 'input-prompt' );
+  });
 
-    // Generating userID TODO: create better id tag generation for users
-    client.userID = userJoinCount;
-    userList.push( userJoinCount );
+  client.on( 'join', function( data ){
+    for( let i = 0; i < userList.length; i++ ){
+      if( userList[ i ].username === data ){
+        client.emit( 'input-reprompt' );
+        return;
+      }
+    }
+
+    client.username = data;
+    userList.push( client );
     userJoinCount++;
+    client.join( 0 ); // TODO: seperate rooms
+    client.emit( 'start' );
 
     // Entry feedback
-    client.emit( 'get-message', "Welcome to the Chatroom, your Client number is " + client.userID );
-    client.broadcast.to( 0 ).emit( 'get-message', "Client number" + client.userID + " has connected." );  // TODO: seperate rooms
+    client.emit( 'get-message', "Welcome to the Chatroom, " + client.username );
+    client.broadcast.to( 0 ).emit( 'get-message', client.username + " has connected." );  // TODO: seperate rooms
   });
 
   client.on( 'post-message', function( data ){
@@ -39,9 +50,13 @@ io.on( 'connection', function( client ){
   });
 
   client.on( 'disconnect', function(){
-    userList.splice( userList.indexOf( client.userID ), 1 );
-    client.broadcast.to( 0 ).emit( 'get-message', "Client number " + client.userID + " has disconnected." ); // TODO: seperate rooms
+    if( client.username ){
+      userList.splice( userList.indexOf( client.username ), 1 );
+      client.broadcast.to( 0 ).emit( 'get-message', client.username + " has disconnected." ); // TODO: seperate rooms
+    }
   });
+
+  client.emit( 'input-prompt' );
 });
 
 server.listen( 3000 );

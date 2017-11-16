@@ -2,20 +2,27 @@
 <html>
   <head>
     <meta charset "utf-8">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <link rel="stylesheet" href="./style.css"></link>
   </head>
   <body>
     <div id="loader-wrapper">
-      <div id="loader"></div>
+      <section id="loader"></section>
       <div class="loader-slider" id="slider-left"></div>
       <div class="loader-slider" id="slider-right"></div>
     </div>
-    
-    <div id="ready">
-      <textarea disabled></textarea>
-  		<input id="writebox" name="message" type="text"/>
-  		<input id="sendbox" type="button" value="send"/>
+    <div id="ready-wrapper">
+      <textarea id="chatbox" disabled></textarea>
+  		<input class="writebox" id="chat-writebox" name="message" type="text"/>
+  		<input class="sendbox"  id="chat-sendbox"  type="button"  value="send"/>
       <canvas></canvas>
+    </div>
+    <div id="prompt-wrapper">
+      <section id="prompt">
+        <h1>Choose a Username:</h1>
+        <input class="writebox" id="prompt-writebox" name="message" type="text" maxlength="10"/>
+    		<input class="sendbox"  id="prompt-sendbox"  type="button"  value="Submit"/>
+      </section>
     </div>
   </body>
   <script src="/socket.io/socket.io.js"></script>
