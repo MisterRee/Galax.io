@@ -7,6 +7,16 @@ body{
   overflow-x: hidden;
 }
 
+h1{
+  margin: 0;
+  font-size: 2em;
+}
+
+h3{
+  margin: 0;
+  font-size: 1.25em;
+}
+
 #chatbox{
   display: block;
   height: 220px;
@@ -128,18 +138,36 @@ canvas{
   background-color: rgba( 22, 22, 22, 0.2);
 }
 
-  #prompt{
+  #prompt-warning{
+    position: fixed;
+    text-align: center;
+    top: 1em;
+    padding: 1em;
+    margin: 0 auto;
+    z-index: 502;
+    border-radius: 0.5em;
+    background-color: #FFF;
+    opacity: 1;
+  }
+
+    .dormant#prompt-warning{
+      opacity: 0;
+      -webkit-transition: all 0.3s ease-out;
+              transition: all 0.3s ease-out;
+    }
+
+    #prompt-warning h3{
+      color: #900;
+    }
+
+  #prompt-input{
     text-align: center;
     padding: 1em;
     margin: 0 auto;
     z-index: 501;
+    border-radius: 0.5em;
     background-color: #EEE;
   }
-
-    #prompt h1{
-      margin: 0;
-      font-size: 2em;
-    }
 
     #prompt-writebox{
       display: block;

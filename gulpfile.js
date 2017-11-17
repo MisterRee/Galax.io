@@ -44,7 +44,7 @@ gulp.task( 'server', function(){
 
 // Runs tests on any file changes in js/ folder
 gulp.task( 'watch', function(){
-  gulp.watch( ['./App.js', './src/*'], ['build', 'server'] );
+  gulp.watch( ['./App.js', './src/*', './public/*'], ['build', 'server'] );
 });
 
 gulp.task( 'default', ['watch', 'server'] );

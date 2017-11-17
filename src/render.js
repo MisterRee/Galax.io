@@ -4,11 +4,12 @@
 let socket, cvs, ctx;
 
  // HTML Elements & UI References
-let textarea, cWritebox, cSendbox, pWritebox, pSendbox;
+let textarea, cWritebox, cSendbox, pWritebox, pSendbox, pWarningbox;
 
  // Mechanics
 let connection = false;
 let username;
+let warningBlock = false;
 
 // Connects HTML Element references, setup dynamic CSS, setup event handlers
 const init = function(){
@@ -16,9 +17,10 @@ const init = function(){
   ctx = cvs.getContext( '2d' );
   textarea  = document.querySelector( '#chatbox' );
   cWritebox = document.querySelector( '#chat-writebox' );
-  cSendbox  = document.querySelector( '#chat-sendbox'  );
+  cSendbox  = document.querySelector( '#chat-sendbox' );
   pWritebox = document.querySelector( '#prompt-writebox' );
-  pSendbox =  document.querySelector( '#prompt-sendbox'  );
+  pSendbox =  document.querySelector( '#prompt-sendbox' );
+  pWarningbox = document.querySelector( '#prompt-warning' )
 
   // Dynamic CSS value resets
   const resize = function(){
@@ -58,7 +60,21 @@ const serverConnect = function(){
   pSendbox.addEventListener( 'click', sendPrompt, false );
 
   socket.on( 'input-reprompt', function(){
-    // TODO: User feedback that name already exists in active array
+    console.log( "trigger" );
+    pWritebox.focus();
+
+    if( pWarningbox.classList ){
+      // Remove dormant class and readd to start css3 animation fadeout
+      pWarningbox.classList = "";
+
+      if( !warningBlock ){
+        warningBlock = true;
+        setTimeout( function(){
+          warningBlock = false;
+          pWarningbox.classList += "dormant";
+        }, 2000 );
+      }
+    }
   });
 
   socket.on( 'start', function(){

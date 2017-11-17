@@ -21,7 +21,6 @@ io.on( 'connection', function( client ){
 
   client.on( 'set-input', function(){
     client.status = "prompting";
-    //client.emit( 'input-prompt' );
   });
 
   client.on( 'join', function( data ){
@@ -32,6 +31,7 @@ io.on( 'connection', function( client ){
       }
     }
 
+    client.status = "joined";
     client.username = data;
     userList.push( client );
     userJoinCount++;
@@ -55,8 +55,6 @@ io.on( 'connection', function( client ){
       client.broadcast.to( 0 ).emit( 'get-message', client.username + " has disconnected." ); // TODO: seperate rooms
     }
   });
-
-  client.emit( 'input-prompt' );
 });
 
 server.listen( 3000 );
