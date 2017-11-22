@@ -6,16 +6,13 @@
     <link rel="stylesheet" href="./style.css"></link>
   </head>
   <body>
-    <div id="loader-wrapper">
-      <section id="loader"></section>
-      <div class="loader-slider" id="slider-left"></div>
-      <div class="loader-slider" id="slider-right"></div>
+    <div id="overwrap">
+      <canvas></canvas>
     </div>
     <div id="ready-wrapper">
       <textarea id="chatbox" disabled></textarea>
   		<input class="writebox" id="chat-writebox" name="message" type="text"/>
   		<input class="sendbox"  id="chat-sendbox"  type="button"  value="send"/>
-      <canvas></canvas>
     </div>
     <div id="prompt-wrapper">
       <section id="prompt-warning" class="dormant">
@@ -26,6 +23,11 @@
         <input class="writebox" id="prompt-writebox" name="message" type="text" maxlength="10"/>
     		<input class="sendbox"  id="prompt-sendbox"  type="button"  value="Submit"/>
       </section>
+    </div>
+    <div id="loader-wrapper">
+      <div class="loader-slider" id="slider-left"></div>
+      <div class="loader-slider" id="slider-right"></div>
+      <section id="loader"></section>
     </div>
   </body>
   <script src="/socket.io/socket.io.js"></script>
