@@ -1,5 +1,7 @@
 /* --View Module-- */
-// TODO: This file needs to be rerouted to /src after development
+
+  // Dependencies
+  const now = require( 'performance-now' );
 
    // Engines
   let socket, cvs, ctx;
@@ -8,9 +10,10 @@
   let textarea, cWritebox, cSendbox, pWritebox, pSendbox, pWarningbox;
 
    // Mechanics
+  let cvsw, cvsh, tbr, lrc;
   let connection = false;
-  let username;
   let warningBlock = false;
+  let username, gamePacket;
 
 // Connects HTML Element references, setup dynamic CSS, setup event handlers
 const init = function(){
@@ -29,6 +32,16 @@ const init = function(){
              || document.documentElement.clientWidth
              || document.body.clientWidth;
     textarea.style.width = width + "px";
+
+    ctx.canvas.width = window.innerWidth
+                    || document.documentElement.clientWidth
+                    || document.body.clientWidth;
+    ctx.canvas.height = window.innerHeight
+                    || document.documentElement.clientHeight
+                    || document.body.clientHeight;
+
+    cvsw = ctx.canvas.width;
+    cvsh = ctx.canvas.height;
   };
   resize();
   window.onresize = resize;
@@ -50,16 +63,17 @@ const serverConnect = function(){
 
   socket = io.connect();
 
+    // Swap off loading phase
     socket.on( 'connect', function(){
       document.querySelector( '#loader-wrapper' ).classList += "loaded";
     });
 
+    // Setup for possible reprompting user in case of input error
     const sendPrompt = function(){
       const data = pWritebox.value;
       socket.emit( 'join', data );
     };
     pSendbox.addEventListener( 'click', sendPrompt, false );
-
     socket.on( 'input-reprompt', function(){
       pWritebox.focus();
 
@@ -77,14 +91,23 @@ const serverConnect = function(){
       }
     });
 
+    // Swap on into game phase
     socket.on( 'start', function(){
       connection = true;
       username = pWritebox.value;
       document.querySelector( '#prompt-wrapper' ).classList += "done";
+      tbr = 0;
+      clientLoop();
     });
 
+    // Post message to chat
     socket.on( 'get-message', function( data ){
       textarea.value += '\n' + data;
+    });
+
+    // Feed from data stream
+    socket.on( 'get-gamedata', function( data ){
+      gamePacket = data;
     });
 
   // After all setups are finished, finally set key binds
@@ -94,7 +117,7 @@ const serverConnect = function(){
 // For enter key event
 const handleKeyPress = function( e ){
   if( connection ){
-    // This causes any key to type into the chatbox without having to manually refocus after each enter press
+    // Any key press will focus into the chatbox
     cWritebox.focus();
 
     if( e.keyCode == 13 ){ // enter key
@@ -118,6 +141,48 @@ const postMessage = function(){
 
   socket.emit( 'post-message', { sender: username, value: cWritebox.value } );
   cWritebox.value = "";
+};
+
+// Loop starts once game state begins
+// Synchroniously paced game function
+const clientLoop = function(){
+  if( !lrc ){
+    lrc = now();
+    requestAnimationFrame( clientLoop );
+    return;
+  };
+
+  // Calculating time between frames to incorporate into framing the draw
+  let delta = ( now() - lrc );
+  lrc = now();
+  tbr = delta / 1000;
+
+  // Frame by frame functions here!
+  socket.emit( 'pull-gamedata' );
+  clientDraw();
+
+  requestAnimationFrame( clientLoop );
+};
+
+const clientDraw = function(){
+  ctx.fillStyle = "#000";
+  ctx.fillRect( 0, 0, cvsw, cvsh );
+
+  if( !gamePacket ){
+    return;
+  };
+
+  for( let i = 0; i < gamePacket.length; i++ ){
+    ctx.fillStyle = gamePacket[i].clr;
+    ctx.beginPath();
+    ctx.ellipse(
+      gamePacket[i].pos.x * cvsw,
+      gamePacket[i].pos.y * cvsh,
+      gamePacket[i].rad.x * cvsw,
+      gamePacket[i].rad.y * cvsh,
+      0, 0, Math.PI * 2 );
+    ctx.fill();
+  };
 };
 
 window.onload = init;

@@ -58,6 +58,27 @@ io.on( 'connection', function( client ){
         client.broadcast.to( 0 ).emit( 'get-message', client.username + " has disconnected." ); // TODO: seperate rooms
       }
     });
+
+    client.on( 'pull-gamedata', function(){
+      client.emit( 'get-gamedata', bubbleList );
+    });
 });
 
-server.listen( 3000 );
+// Frame Time sensitive function
+const gameCalculate = function(){
+
+};
+
+
+const gameLoop = function(){
+
+};
+
+// Game Setup
+const gameInit = function(){
+  // TODO: Hardcoded Test Bubble
+  bubbleList.push( new Bubble( { x: 0.01, y:  0.01 }, { x: 0.5, y:  0.5 }, "rgba( 255, 0, 0, 0.5 )" ) );
+  server.listen( 3000 );
+};
+
+gameInit();
