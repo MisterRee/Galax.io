@@ -1,25 +1,26 @@
-// View Module
+/* --View Module-- */
+// TODO: This file needs to be rerouted to /src after development
 
- // Engines
-let socket, cvs, ctx;
+   // Engines
+  let socket, cvs, ctx;
 
- // HTML Elements & UI References
-let textarea, cWritebox, cSendbox, pWritebox, pSendbox, pWarningbox;
+   // HTML Elements & UI References
+  let textarea, cWritebox, cSendbox, pWritebox, pSendbox, pWarningbox;
 
- // Mechanics
-let connection = false;
-let username;
-let warningBlock = false;
+   // Mechanics
+  let connection = false;
+  let username;
+  let warningBlock = false;
 
 // Connects HTML Element references, setup dynamic CSS, setup event handlers
 const init = function(){
   cvs = document.querySelector( 'canvas' );
   ctx = cvs.getContext( '2d' );
-  textarea  = document.querySelector( '#chatbox' );
-  cWritebox = document.querySelector( '#chat-writebox' );
-  cSendbox  = document.querySelector( '#chat-sendbox' );
-  pWritebox = document.querySelector( '#prompt-writebox' );
-  pSendbox =  document.querySelector( '#prompt-sendbox' );
+  textarea    = document.querySelector( '#chatbox' );
+  cWritebox   = document.querySelector( '#chat-writebox' );
+  cSendbox    = document.querySelector( '#chat-sendbox' );
+  pWritebox   = document.querySelector( '#prompt-writebox' );
+  pSendbox    = document.querySelector( '#prompt-sendbox' );
   pWarningbox = document.querySelector( '#prompt-warning' )
 
   // Dynamic CSS value resets
@@ -49,43 +50,42 @@ const serverConnect = function(){
 
   socket = io.connect();
 
-  socket.on( 'connect', function(){
-    document.querySelector( '#loader-wrapper' ).classList += "loaded";
-  });
+    socket.on( 'connect', function(){
+      document.querySelector( '#loader-wrapper' ).classList += "loaded";
+    });
 
-  const sendPrompt = function(){
-    const data = pWritebox.value;
-    socket.emit( 'join', data );
-  };
-  pSendbox.addEventListener( 'click', sendPrompt, false );
+    const sendPrompt = function(){
+      const data = pWritebox.value;
+      socket.emit( 'join', data );
+    };
+    pSendbox.addEventListener( 'click', sendPrompt, false );
 
-  socket.on( 'input-reprompt', function(){
-    console.log( "trigger" );
-    pWritebox.focus();
+    socket.on( 'input-reprompt', function(){
+      pWritebox.focus();
 
-    if( pWarningbox.classList ){
-      // Remove dormant class and readd to start css3 animation fadeout
-      pWarningbox.classList = "";
+      if( pWarningbox.classList ){
+        // Remove dormant class and readd to start css3 animation fadeout
+        pWarningbox.classList = "";
 
-      if( !warningBlock ){
-        warningBlock = true;
-        setTimeout( function(){
-          warningBlock = false;
-          pWarningbox.classList += "dormant";
-        }, 2000 );
+        if( !warningBlock ){
+          warningBlock = true;
+          setTimeout( function(){
+            warningBlock = false;
+            pWarningbox.classList += "dormant";
+          }, 2000 );
+        }
       }
-    }
-  });
+    });
 
-  socket.on( 'start', function(){
-    connection = true;
-    username = pWritebox.value;
-    document.querySelector( '#prompt-wrapper' ).classList += "done";
-  });
+    socket.on( 'start', function(){
+      connection = true;
+      username = pWritebox.value;
+      document.querySelector( '#prompt-wrapper' ).classList += "done";
+    });
 
-  socket.on( 'get-message', function( data ){
-    textarea.value += '\n' + data;
-  });
+    socket.on( 'get-message', function( data ){
+      textarea.value += '\n' + data;
+    });
 
   // After all setups are finished, finally set key binds
   document.addEventListener( 'keypress', handleKeyPress, false );
