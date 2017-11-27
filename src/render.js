@@ -28,11 +28,13 @@ const init = function(){
 
   // Dynamic CSS value resets
   const resize = function(){
+    // Set UI elements to current window size
     let width = window.innerWidth
              || document.documentElement.clientWidth
              || document.body.clientWidth;
     textarea.style.width = width + "px";
 
+    // Set drawing canvas to current window size
     ctx.canvas.width = window.innerWidth
                     || document.documentElement.clientWidth
                     || document.body.clientWidth;
@@ -124,6 +126,7 @@ const handleKeyPress = function( e ){
       postMessage();
     }
   } else {
+    // For the prompt box
     pWritebox.focus();
 
     if( e.keyCode == 13 ){ // enter key
@@ -143,14 +146,14 @@ const postMessage = function(){
   cWritebox.value = "";
 };
 
-// Loop starts once game state begins
-// Synchroniously paced game function
+// Loop starts once game state begins, Synchroniously paced game loop
 const clientLoop = function(){
+  // First iteration detection
   if( !lrc ){
     lrc = now();
     requestAnimationFrame( clientLoop );
     return;
-  };
+  }
 
   // Calculating time between frames to incorporate into framing the draw
   let delta = ( now() - lrc );
@@ -164,7 +167,9 @@ const clientLoop = function(){
   requestAnimationFrame( clientLoop );
 };
 
+// Canvas rendering method
 const clientDraw = function(){
+  // Clear frame
   ctx.fillStyle = "#000";
   ctx.fillRect( 0, 0, cvsw, cvsh );
 

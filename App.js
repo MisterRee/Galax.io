@@ -20,14 +20,17 @@
   // Model Imports
   const Bubble = require( './src/Bubble.js' );
 
-  // Mechanics
+  // Mechanicals
   let bubbleList = [];
 
 // Function which is called when a connection is made to this server
 // All handshakes required with the client is declared within this function
 io.on( 'connection', function( client ){
   console.log( "Client connected!" );
+
+    // User attempt to join with a username value
     client.on( 'join', function( data ){
+      // Scan through currently joined users to rject duplicate usernames
       for( let i = 0; i < userList.length; i++ ){
         if( userList[ i ].username === data ){
           client.emit( 'input-reprompt' );
@@ -35,6 +38,7 @@ io.on( 'connection', function( client ){
         }
       }
 
+      // Username appropriate, begin join process
       client.username = data;
       userList.push( client );
       userJoinCount++;
@@ -46,12 +50,14 @@ io.on( 'connection', function( client ){
       client.broadcast.to( 0 ).emit( 'get-message', client.username + " has connected." );  // TODO: seperate rooms
     });
 
+    // Broadcast to currently joined users a message
     client.on( 'post-message', function( data ){
       let message = data.sender + ": " + data.value;
       client.emit( 'get-message', message );
       client.broadcast.to( 0 ).emit( 'get-message', message );  // TODO: seperate rooms
     });
 
+    // Utility for abrupt disconnects
     client.on( 'disconnect', function(){
       if( client.username ){
         userList.splice( userList.indexOf( client.username ), 1 );
@@ -59,20 +65,11 @@ io.on( 'connection', function( client ){
       }
     });
 
+    // Called during game frame loops
     client.on( 'pull-gamedata', function(){
       client.emit( 'get-gamedata', bubbleList );
     });
 });
-
-// Frame Time sensitive function
-const gameCalculate = function(){
-
-};
-
-
-const gameLoop = function(){
-
-};
 
 // Game Setup
 const gameInit = function(){

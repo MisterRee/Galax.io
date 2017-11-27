@@ -32,6 +32,7 @@
   });
 
   // restart npm server after building gulp
+  // TODO: Does not refresh the App.js file after watchify detects change
   gulp.task( 'server', function(){
     if ( node ) node.kill; // restart any running servers
 
