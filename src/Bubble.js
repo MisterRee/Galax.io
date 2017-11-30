@@ -1,9 +1,12 @@
 /* --Model Module-- */
 
-module.exports = class Bubble{
-  constructor( _dimens, _coord, _clr ){
+  // Constants
+  const PLAYER_RADIUS = 0.05;
+
+class Bubble{
+  constructor( _rad, _coord, _clr ){
     // Constraints, values between 0 - 1 as floats
-    this.rad = { x: _dimens.x, y: _dimens.y };
+    this.rad = _rad;
 
     // Physics, values between 0 - 1 as floats
     this.pos = { x: _coord.x, y: _coord.y };
@@ -13,4 +16,15 @@ module.exports = class Bubble{
     // Draw Data
     this.clr = _clr;
   }
+};
+
+class PlayerBubble extends Bubble{
+  constructor( _socket ){
+    super( PLAYER_RADIUS, { x: 0.5, y: 0.5 }, "rgba( 255, 0, 0, 0.5 )" );
+  }
+};
+
+module.exports = {
+  Bubble: Bubble,
+  PlayerBubble: PlayerBubble
 };

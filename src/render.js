@@ -10,10 +10,49 @@
   let textarea, cWritebox, cSendbox, pWritebox, pSendbox, pWarningbox;
 
    // Mechanics
-  let cvsw, cvsh, tbr, lrc;
+  let cvsw, cvsh, tbr, lrc, mdr, mec;
   let connection = false;
   let warningBlock = false;
   let username, gamePacket;
+
+// Dynamic CSS value resets
+const resize = function(){
+  // Set UI elements to current window size
+  let width = window.innerWidth
+           || document.documentElement.clientWidth
+           || document.body.clientWidth;
+  textarea.style.width = width + "px";
+
+  // Set drawing canvas to current window size
+  ctx.canvas.width = window.innerWidth
+                  || document.documentElement.clientWidth
+                  || document.body.clientWidth;
+  ctx.canvas.height = window.innerHeight
+                  || document.documentElement.clientHeight
+                  || document.body.clientHeight;
+
+  cvsw = ctx.canvas.width;
+  cvsh = ctx.canvas.height;
+};
+
+const mouseOver = function( e ){
+  // Since events can fire off faster than frames
+  // Prevent more than one data push between one effective frame
+  if( !mdr ){
+    return;
+  }
+  mdr = false;
+
+  const rect = cvs.getBoundingClientRect();
+
+  mec = {
+   u: username,
+   x: ( e.clientX - rect.x ) / cvsw,
+   y: ( e.clientY - rect.y ) / cvsh
+  };
+
+   socket.emit( 'push-mousedata', mec );
+};
 
 // Connects HTML Element references, setup dynamic CSS, setup event handlers
 const init = function(){
@@ -26,25 +65,7 @@ const init = function(){
   pSendbox    = document.querySelector( '#prompt-sendbox' );
   pWarningbox = document.querySelector( '#prompt-warning' )
 
-  // Dynamic CSS value resets
-  const resize = function(){
-    // Set UI elements to current window size
-    let width = window.innerWidth
-             || document.documentElement.clientWidth
-             || document.body.clientWidth;
-    textarea.style.width = width + "px";
 
-    // Set drawing canvas to current window size
-    ctx.canvas.width = window.innerWidth
-                    || document.documentElement.clientWidth
-                    || document.body.clientWidth;
-    ctx.canvas.height = window.innerHeight
-                    || document.documentElement.clientHeight
-                    || document.body.clientHeight;
-
-    cvsw = ctx.canvas.width;
-    cvsh = ctx.canvas.height;
-  };
   resize();
   window.onresize = resize;
   cSendbox.addEventListener( 'click', postMessage, false );
@@ -155,6 +176,9 @@ const clientLoop = function(){
     return;
   }
 
+  // Switch to only allow one mouse data emission to the server during active frame
+  mdr = true;
+
   // Calculating time between frames to incorporate into framing the draw
   let delta = ( now() - lrc );
   lrc = now();
@@ -183,8 +207,8 @@ const clientDraw = function(){
     ctx.ellipse(
       gamePacket[i].pos.x * cvsw,
       gamePacket[i].pos.y * cvsh,
-      gamePacket[i].rad.x * cvsw,
-      gamePacket[i].rad.y * cvsh,
+      gamePacket[i].rad   * cvsw,
+      gamePacket[i].rad   * cvsh,
       0, 0, Math.PI * 2 );
     ctx.fill();
   };
