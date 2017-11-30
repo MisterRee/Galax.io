@@ -7,7 +7,7 @@
   let socket, cvs, ctx;
 
    // HTML Elements & UI References
-  let textarea, cWritebox, cSendbox, pWritebox, pSendbox, pWarningbox;
+  let chatwrap, textarea, cWritebox, cSendbox, pWritebox, pSendbox, pWarningbox;
 
    // Mechanics
   let cvsw, cvsh, tbr, lrc, mdr, mec;
@@ -16,7 +16,7 @@
   let username, gamePacket;
 
 // Dynamic CSS value resets
-const resize = function(){
+const windowResize = function(){
   // Set UI elements to current window size
   let width = window.innerWidth
            || document.documentElement.clientWidth
@@ -35,10 +35,10 @@ const resize = function(){
   cvsh = ctx.canvas.height;
 };
 
-const mouseOver = function( e ){
+const cvsMouseOver = function( e ){
   // Since events can fire off faster than frames
   // Prevent more than one data push between one effective frame
-  if( !mdr ){
+  if( !mdr || !connection ){
     return;
   }
   mdr = false;
@@ -47,17 +47,28 @@ const mouseOver = function( e ){
 
   mec = {
    u: username,
-   x: ( e.clientX - rect.x ) / cvsw,
-   y: ( e.clientY - rect.y ) / cvsh
+   p: { x: ( e.clientX - rect.x ) / cvsw, y: ( e.clientY - rect.y ) / cvsh }
   };
 
+  console.log( mec );
    socket.emit( 'push-mousedata', mec );
 };
 
-// Connects HTML Element references, setup dynamic CSS, setup event handlers
+const chatFocusToggleOn = function(){
+  if( !chatwrap.classList.contains( "focused" ) ){
+    chatwrap.classList += "focused";
+  }
+};
+
+const chatFocusToggleOff = function(){
+  chatwrap.classList.remove( "focused" );
+};
+
 const init = function(){
+  // Set References
   cvs = document.querySelector( 'canvas' );
   ctx = cvs.getContext( '2d' );
+  chatwrap    = document.querySelector( '#chat-wrapper' );
   textarea    = document.querySelector( '#chatbox' );
   cWritebox   = document.querySelector( '#chat-writebox' );
   cSendbox    = document.querySelector( '#chat-sendbox' );
@@ -65,12 +76,14 @@ const init = function(){
   pSendbox    = document.querySelector( '#prompt-sendbox' );
   pWarningbox = document.querySelector( '#prompt-warning' )
 
-
-  resize();
-  window.onresize = resize;
+  // Mechanical Setup
+  windowResize();
+  window.onresize = windowResize;
   cSendbox.addEventListener( 'click', postMessage, false );
+     cvs.addEventListener( 'click', chatFocusToggleOff, false );
+     cvs.addEventListener( 'mouseover', cvsMouseOver, false );
 
-   // Clear fields
+   // Clear fields jic
    textarea.value  = "";
    cWritebox.value = "";
    pWritebox.value = "";
@@ -142,6 +155,7 @@ const handleKeyPress = function( e ){
   if( connection ){
     // Any key press will focus into the chatbox
     cWritebox.focus();
+    chatFocusToggleOn();
 
     if( e.keyCode == 13 ){ // enter key
       postMessage();

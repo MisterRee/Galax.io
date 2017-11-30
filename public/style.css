@@ -33,10 +33,15 @@ h3{
     height: 100%;
   }
 
-#ready-wrapper{
+#chat-wrapper{
   position: fixed;
+  display: none;
   z-index: 2;
   top: 0;
+}
+
+#chat-wrapper.focused{
+  display: block;
 }
 
   #chatbox{

@@ -92,10 +92,9 @@ io.on( 'connection', function( client ){
 
   client.on( 'push-mousedata', function( data ){
     // Scan through existing data list
-    // TODO: Bubble design might be able to skip reference check
     for( let i = 0; i < userList.length; i++ ){
       if( userList[ i ].username === data.u ){
-        userList[ i ].mouseData = { x: data.x, y: data.y };
+        userList[ i ].bubble.pos = data.p;
         return;
       }
     }
