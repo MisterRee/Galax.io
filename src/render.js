@@ -10,7 +10,7 @@
   let chatwrap, textarea, cWritebox, cSendbox, pWritebox, pSendbox, pWarningbox;
 
    // Mechanics
-  let cvsw, cvsh, tbr, lrc, mdr, mec;
+  let cvsw, cvsh, tbr, lrc, mdr, mrs, mec;
   let connection = false;
   let warningBlock = false;
   let username, gamePacket;
@@ -35,6 +35,16 @@ const windowResize = function(){
   cvsh = ctx.canvas.height;
 };
 
+const chatFocusToggleOn = function(){
+  if( !chatwrap.classList.contains( "focused" ) ){
+    chatwrap.classList += "focused";
+  }
+};
+
+const chatFocusToggleOff = function(){
+  chatwrap.classList.remove( "focused" );
+};
+
 const cvsMouseOver = function( e ){
   // Since events can fire off faster than frames
   // Prevent more than one data push between one effective frame
@@ -50,18 +60,12 @@ const cvsMouseOver = function( e ){
    p: { x: ( e.clientX - rect.x ) / cvsw, y: ( e.clientY - rect.y ) / cvsh }
   };
 
-  console.log( mec );
    socket.emit( 'push-mousedata', mec );
 };
 
-const chatFocusToggleOn = function(){
-  if( !chatwrap.classList.contains( "focused" ) ){
-    chatwrap.classList += "focused";
-  }
-};
+// Indicates that user's mouse is currently off the play canvas
+const cvsMouseOut = function( e ){
 
-const chatFocusToggleOff = function(){
-  chatwrap.classList.remove( "focused" );
 };
 
 const init = function(){
@@ -82,6 +86,8 @@ const init = function(){
   cSendbox.addEventListener( 'click', postMessage, false );
      cvs.addEventListener( 'click', chatFocusToggleOff, false );
      cvs.addEventListener( 'mouseover', cvsMouseOver, false );
+     cvs.addEventListener( 'mousemove', cvsMouseOver, false );
+
 
    // Clear fields jic
    textarea.value  = "";
