@@ -94,8 +94,13 @@ io.on( 'connection', function( client ){
     // Scan through existing data list
     for( let i = 0; i < userList.length; i++ ){
       if( userList[ i ].username === data.u ){
-        userList[ i ].bubble.pos = data.p;
-        return;
+        if( !data.d ){
+          userList[ i ].bubble.draw = false;
+        } else {
+          userList[ i ].bubble.draw = true;
+          userList[ i ].bubble.pos = data.p;
+          return;
+        }
       }
     }
   });

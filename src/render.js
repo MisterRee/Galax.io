@@ -10,7 +10,7 @@
   let chatwrap, textarea, cWritebox, cSendbox, pWritebox, pSendbox, pWarningbox;
 
    // Mechanics
-  let cvsw, cvsh, tbr, lrc, mdr, mrs, mec;
+  let cvsw, cvsh, tbr, lrc, mdr, mec;
   let connection = false;
   let warningBlock = false;
   let username, gamePacket;
@@ -57,6 +57,7 @@ const cvsMouseOver = function( e ){
 
   mec = {
    u: username,
+   d: true,
    p: { x: ( e.clientX - rect.x ) / cvsw, y: ( e.clientY - rect.y ) / cvsh }
   };
 
@@ -64,8 +65,21 @@ const cvsMouseOver = function( e ){
 };
 
 // Indicates that user's mouse is currently off the play canvas
+// Prevents the user's bubble from being drawn
+// TODO: This might interfere with future collision detection
 const cvsMouseOut = function( e ){
+  // MouseOut event is not limited to Synchronious framerate
+  if( !connection ){
+    return;
+  }
+  mdr = false;
 
+  mec = {
+    u: username,
+    d: false
+  };
+
+  socket.emit( 'push-mousedata', mec );
 };
 
 const init = function(){
@@ -87,7 +101,7 @@ const init = function(){
      cvs.addEventListener( 'click', chatFocusToggleOff, false );
      cvs.addEventListener( 'mouseover', cvsMouseOver, false );
      cvs.addEventListener( 'mousemove', cvsMouseOver, false );
-
+     cvs.addEventListener( 'mouseout',  cvsMouseOut,  false );
 
    // Clear fields jic
    textarea.value  = "";
@@ -222,6 +236,10 @@ const clientDraw = function(){
   };
 
   for( let i = 0; i < gamePacket.length; i++ ){
+    if( !gamePacket[i].draw ){
+      continue;
+    }
+
     ctx.fillStyle = gamePacket[i].clr;
     ctx.beginPath();
     ctx.ellipse(

@@ -15,6 +15,9 @@ class Bubble{
 
     // Draw Data
     this.clr = _clr;
+
+    // Mechanical
+    this.draw = true;
   }
 };
 
