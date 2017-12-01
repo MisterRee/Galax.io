@@ -27,7 +27,17 @@ class PlayerBubble extends Bubble{
   }
 };
 
+class NeutralBubble extends Bubble{
+  constructor(){
+    super( PLAYER_RADIUS, { x: Math.random(), y: Math.random() },
+      "rgba(" + Math.round( Math.random() * 255 ) + ","
+              + Math.round( Math.random() * 255 ) + ","
+              + Math.round( Math.random() * 255 ) + ",0.5)" );
+  }
+};
+
 module.exports = {
   Bubble: Bubble,
-  PlayerBubble: PlayerBubble
+  PlayerBubble: PlayerBubble,
+  NeutralBubble: NeutralBubble
 };

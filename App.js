@@ -20,6 +20,10 @@
   let userJoinCount = 0; // Total joined user tally
   let userList = [];
   let bubbleList = [];
+  let neutralList = [];
+
+  // Constants
+  const BUBBLE_PER_PLAYER = 5;
 
 // Function which is called when a connection is made to this server
 // All handshakes required with the client is declared within this function
@@ -87,7 +91,9 @@ io.on( 'connection', function( client ){
 
   // Called during game frame loops
   client.on( 'pull-gamedata', function(){
-    client.emit( 'get-gamedata', bubbleList );
+    let bubbleRef = bubbleList;
+    let mergeLists = bubbleRef.concat( neutralList );
+    client.emit( 'get-gamedata', mergeLists );
   });
 
   client.on( 'push-mousedata', function( data ){
@@ -108,6 +114,10 @@ io.on( 'connection', function( client ){
 
 // Game Setup
 const gameInit = function(){
+  for( let i = 0; i < BUBBLE_PER_PLAYER; i++ ){
+    neutralList.push( new BubbleModels.NeutralBubble() );
+  }
+
   server.listen( 3000 );
   gameLoop();
 };
