@@ -1,10 +1,11 @@
 /* --Controller Module-- */
 
-  // Controlling Dependencies
+  // Dependencies
   const express = require( 'express' );
   const App = express();
   const server = require( 'http' ).createServer( App );
   const io = require( 'socket.io' )( server );
+  const now = require( 'performance-now' );
 
   // Routing stuff
   App.use( express.static( __dirname + '/public' ) );
@@ -17,6 +18,7 @@
   const BubbleModels = require( './src/Bubble.js' );
 
   // Mechanicals
+  let lrc;
   let userJoinCount = 0; // Total joined user tally
   let userList = [];
   let bubbleList = [];
@@ -54,6 +56,11 @@ io.on( 'connection', function( client ){
              + Math.round( Math.random() * 255 ) + ","
              + Math.round( Math.random() * 255 ) + ",0.5)" );
     bubbleList.push( client.bubble );
+
+    // Inflate current neutralList
+    for( let i = 0; i < BUBBLE_PER_PLAYER; i++ ){
+      neutralList.push( new BubbleModels.NeutralBubble() );
+    }
 
     // Entry feedback
     client.emit( 'get-message', "Welcome to the Chatroom, " + client.username );
@@ -104,7 +111,7 @@ io.on( 'connection', function( client ){
           userList[ i ].bubble.draw = false;
         } else {
           userList[ i ].bubble.draw = true;
-          userList[ i ].bubble.pos = data.p;
+          userList[ i ].bubble.pos  = data.p;
           return;
         }
       }
@@ -122,8 +129,21 @@ const gameInit = function(){
   gameLoop();
 };
 
-// Game Cycle
+// Game Cycle, recording frame timings
 const gameLoop = function(){
+  if( !lrc ){
+    lrc = now();
+    setImmediate( gameLoop );
+  }
+
+  let delta = ( now() - lrc );
+  lrc = now();
+  tbr = delta / 1000;
+
+
+};
+
+const gameCycle = function(){
 
 };
 

@@ -236,17 +236,17 @@ const clientDraw = function(){
   };
 
   for( let i = 0; i < gamePacket.length; i++ ){
-    if( !gamePacket[i].draw ){
+    if( !gamePacket[ i ].draw ){
       continue;
     }
 
-    ctx.fillStyle = gamePacket[i].clr;
+    ctx.fillStyle = gamePacket[ i ].clr;
     ctx.beginPath();
     ctx.ellipse(
-      gamePacket[i].pos.x * cvsw,
-      gamePacket[i].pos.y * cvsh,
-      gamePacket[i].rad   * cvsw,
-      gamePacket[i].rad   * cvsh,
+      gamePacket[ i ].pos.x * cvsw,
+      gamePacket[ i ].pos.y * cvsh,
+      gamePacket[ i ].rad   * cvsw,
+      gamePacket[ i ].rad   * cvsh,
       0, 0, Math.PI * 2 );
     ctx.fill();
   };
