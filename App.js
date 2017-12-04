@@ -13,6 +13,7 @@
   App.get( '/', function( req, res ){
     res.sendFile( __dirname + '/public/client.html' );
   });
+  App.set( 'port', process.env.PORT || process.env.NODE_PORT || 3000 );
 
   // Model Imports
   const BubbleModels = require( './src/Bubble.js' );
@@ -125,7 +126,7 @@ const gameInit = function(){
     neutralList.push( new BubbleModels.NeutralBubble() );
   }
 
-  server.listen( 3000 );
+  App.listen( App.get( 'port' ) );
   gameLoop();
 };
 
