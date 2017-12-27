@@ -1,9 +1,16 @@
 /* --Controller Module-- */
 
+  // Helper Math Extensions
+  Math.GenerateRandomColor = function(){
+    return "rgba(" + Math.round( Math.random() * 255 ) + ","
+            + Math.round( Math.random() * 255 ) + ","
+            + Math.round( Math.random() * 255 ) + ",0.5)";
+  };
+
   // Dependencies
   const express = require( 'express' );
   const App = express();
-  const server = require( 'http' ).createServer( App );
+  const server = require( 'http' ).Server( App );
   const io = require( 'socket.io' )( server );
   const now = require( 'performance-now' );
 
@@ -14,6 +21,7 @@
     res.sendFile( __dirname + '/public/client.html' );
   });
   App.set( 'port', process.env.PORT || process.env.NODE_PORT || 3000 );
+  //App.listen( App.get( 'port' ) );
 
   // Model Imports
   const BubbleModels = require( './src/Bubble.js' );
@@ -52,15 +60,14 @@ io.on( 'connection', function( client ){
 
     // Player's bubble generation, and list insertion
     // TODO: Find a damn libary for this stupid color alg
-    client.bubble = new BubbleModels.Bubble( 0.05, { x: Math.random(), y: Math.random() },
-      "rgba(" + Math.round( Math.random() * 255 ) + ","
-             + Math.round( Math.random() * 255 ) + ","
-             + Math.round( Math.random() * 255 ) + ",0.5)" );
+    client.bubble = BubbleModels.PlayerBubble(
+      0.05, { x: Math.random(), y: Math.random() },
+      Math.GenerateRandomColor() );
     bubbleList.push( client.bubble );
 
     // Inflate current neutralList
     for( let i = 0; i < BUBBLE_PER_PLAYER; i++ ){
-      neutralList.push( new BubbleModels.NeutralBubble() );
+      neutralList.push( BubbleModels.NeutralBubble() );
     }
 
     // Entry feedback
@@ -100,7 +107,7 @@ io.on( 'connection', function( client ){
   // Called during game frame loops
   client.on( 'pull-gamedata', function(){
     let bubbleRef = bubbleList;
-    let mergeLists = bubbleRef.concat( neutralList );
+    let mergeLists = bubbleRef.concat( neutralList ); // TODO: Concat on each frame is very ineffecient
     client.emit( 'get-gamedata', mergeLists );
   });
 
@@ -109,9 +116,9 @@ io.on( 'connection', function( client ){
     for( let i = 0; i < userList.length; i++ ){
       if( userList[ i ].username === data.u ){
         if( !data.d ){
-          userList[ i ].bubble.draw = false;
+          userList[ i ].bubble.scan = false; // TODO: 'scan' is not descriptive enough
         } else {
-          userList[ i ].bubble.draw = true;
+          userList[ i ].bubble.scan = true;
           userList[ i ].bubble.pos  = data.p;
           return;
         }
@@ -123,10 +130,10 @@ io.on( 'connection', function( client ){
 // Game Setup
 const gameInit = function(){
   for( let i = 0; i < BUBBLE_PER_PLAYER; i++ ){
-    neutralList.push( new BubbleModels.NeutralBubble() );
+    neutralList.push( BubbleModels.NeutralBubble() );
   }
 
-  App.listen( App.get( 'port' ) );
+  server.listen( App.get( 'port' ) );
   gameLoop();
 };
 
@@ -140,8 +147,6 @@ const gameLoop = function(){
   let delta = ( now() - lrc );
   lrc = now();
   tbr = delta / 1000;
-
-
 };
 
 const gameCycle = function(){

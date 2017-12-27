@@ -1,5 +1,18 @@
 /* --View Module-- */
 
+  // Helper
+  const Draw = function( _bub, _ctx, _cvsw, _cvsh ){
+   _ctx.fillStyle = _bub.clr;
+   _ctx.beginPath();
+   _ctx.ellipse(
+     _bub.pos.x * _cvsw,
+     _bub.pos.y * _cvsh,
+     _bub.rad * _cvsw,
+     _bub.rad * _cvsh,
+     0, 0, Math.PI * 2 );
+     _ctx.fill();
+  };
+
   // Dependencies
   const now = require( 'performance-now' );
 
@@ -236,19 +249,11 @@ const clientDraw = function(){
   };
 
   for( let i = 0; i < gamePacket.length; i++ ){
-    if( !gamePacket[ i ].draw ){
+    if( !gamePacket[ i ].scan ){ // TODO: 'scan' is not descriptive enough
       continue;
     }
 
-    ctx.fillStyle = gamePacket[ i ].clr;
-    ctx.beginPath();
-    ctx.ellipse(
-      gamePacket[ i ].pos.x * cvsw,
-      gamePacket[ i ].pos.y * cvsh,
-      gamePacket[ i ].rad   * cvsw,
-      gamePacket[ i ].rad   * cvsh,
-      0, 0, Math.PI * 2 );
-    ctx.fill();
+    Draw( gamePacket[ i ], ctx, cvsw, cvsh );
   };
 };
 
