@@ -29,9 +29,10 @@
   // Mechanicals
   let lrc;
   let userJoinCount = 0; // Total joined user tally
-  let userList = [];
-  let bubbleList = [];
+  let socketList = [];
+  let playerList = [];
   let neutralList = [];
+  let bubbleList = [];
 
   // Constants
   const BUBBLE_PER_PLAYER = 5;
@@ -44,8 +45,8 @@ io.on( 'connection', function( client ){
   // User attempt to join with a username value
   client.on( 'join', function( data ){
     // Scan through currently joined users to rject duplicate usernames
-    for( let i = 0; i < userList.length; i++ ){
-      if( userList[ i ].username === data ){
+    for( let i = 0; i < socketList.length; i++ ){
+      if( socketList[ i ].username === data ){
         client.emit( 'input-reprompt' );
         return;
       }
@@ -53,22 +54,25 @@ io.on( 'connection', function( client ){
 
     // Username appropriate, begin join process
     client.username = data;
-    userList.push( client );
+    socketList.push( client );
     userJoinCount++;
     client.join( 0 ); // TODO: seperate rooms
     client.emit( 'start' );
 
     // Player's bubble generation, and list insertion
-    // TODO: Find a damn libary for this stupid color alg
     client.bubble = BubbleModels.PlayerBubble(
       0.05, { x: Math.random(), y: Math.random() },
       Math.GenerateRandomColor() );
-    bubbleList.push( client.bubble );
+    playerList.push( client.bubble );
 
     // Inflate current neutralList
     for( let i = 0; i < BUBBLE_PER_PLAYER; i++ ){
       neutralList.push( BubbleModels.NeutralBubble() );
     }
+
+    // Concat all bubble lists only when changes occur
+    let bubbleRef = playerList;
+    bubbleList = bubbleRef.concat( neutralList );
 
     // Entry feedback
     client.emit( 'get-message', "Welcome to the Chatroom, " + client.username );
@@ -85,19 +89,23 @@ io.on( 'connection', function( client ){
   // Utility for abrupt disconnects
   client.on( 'disconnect', function(){
     if( client.username ){
-      userList.splice( userList.indexOf( client.username ), 1 );
+      socketList.splice( socketList.indexOf( client.username ), 1 );
       client.broadcast.to( 0 ).emit( 'get-message', client.username + " has disconnected." ); // TODO: seperate rooms
 
       // Remove bubble associated with user
-      let ir = bubbleList.indexOf( client.bubble ); // NOTE: indexOf causes browser compatability errors
+      let ir = playerList.indexOf( client.bubble ); // NOTE: indexOf causes browser compatability errors
       if( ir > -1 ){
-        bubbleList.splice( ir, 1 );
+        playerList.splice( ir, 1 );
       }
 
+      // Concat all bubble lists only when changes occur
+      let bubbleRef = playerList;
+      bubbleList = bubbleRef.concat( neutralList );
+
       // Scan through existing data list, then remove user
-      for( let i = userList.length - 1; i >= 0; i-- ){
-        if( userList[ i ].username === client.username ){
-          userList.splice( i, 1 );
+      for( let i = socketList.length - 1; i >= 0; i-- ){
+        if( socketList[ i ].username === client.username ){
+          socketList.splice( i, 1 );
           return;
         }
       }
@@ -106,20 +114,18 @@ io.on( 'connection', function( client ){
 
   // Called during game frame loops
   client.on( 'pull-gamedata', function(){
-    let bubbleRef = bubbleList;
-    let mergeLists = bubbleRef.concat( neutralList ); // TODO: Concat on each frame is very ineffecient
-    client.emit( 'get-gamedata', mergeLists );
+    client.emit( 'get-gamedata', bubbleList );
   });
 
   client.on( 'push-mousedata', function( data ){
     // Scan through existing data list
-    for( let i = 0; i < userList.length; i++ ){
-      if( userList[ i ].username === data.u ){
+    for( let i = 0; i < socketList.length; i++ ){
+      if( socketList[ i ].username === data.u ){
         if( !data.d ){
-          userList[ i ].bubble.scan = false; // TODO: 'scan' is not descriptive enough
+          socketList[ i ].bubble.scan = false; // TODO: 'scan' is not descriptive enough
         } else {
-          userList[ i ].bubble.scan = true;
-          userList[ i ].bubble.pos  = data.p;
+          socketList[ i ].bubble.scan = true;
+          socketList[ i ].bubble.pos  = data.p;
           return;
         }
       }
@@ -137,7 +143,7 @@ const gameInit = function(){
   gameLoop();
 };
 
-// Game Cycle, recording frame timings
+// Game Loop which records frame timings
 const gameLoop = function(){
   if( !lrc ){
     lrc = now();
@@ -146,11 +152,36 @@ const gameLoop = function(){
 
   let delta = ( now() - lrc );
   lrc = now();
-  tbr = delta / 1000;
+
+  gameCycle( delta / 1000 );
+
+  setImmediate( gameLoop );
 };
 
-const gameCycle = function(){
+// Game Calculations, sensitive to frame timings
+const gameCycle = function( tbf ){
+  let changedList = false;
+  let newBubbleTally = 0;
 
+  // Cycling through Neutral Bubble Decays
+  for( let i = neutralList.length - 1; i >= 0; i-- ){
+    if ( BubbleModels.NeutralDecay( neutralList[ i ], tbf ) ){
+      changedList = true;
+      newBubbleTally++;
+      neutralList.splice( i, 1 );
+    }
+  }
+
+  // Arraylist modifications
+  if( changedList ){
+    for( let i = 0; i < newBubbleTally; i++ ){
+      neutralList.push( BubbleModels.NeutralBubble() );
+    }
+
+    // Concat all bubble lists only when changes occur
+    let bubbleRef = playerList;
+    bubbleList = bubbleRef.concat( neutralList );
+  }
 };
 
 gameInit();
