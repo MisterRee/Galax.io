@@ -35,6 +35,7 @@
   let bubbleList = [];
 
   // Constants
+  const PLAYER_RADIUS = 0.05;
   const BUBBLE_PER_PLAYER = 5;
 
 // Function which is called when a connection is made to this server
@@ -61,7 +62,7 @@ io.on( 'connection', function( client ){
 
     // Player's bubble generation, and list insertion
     client.bubble = BubbleModels.PlayerBubble(
-      0.05, { x: Math.random(), y: Math.random() },
+      PLAYER_RADIUS, { x: Math.random(), y: Math.random() },
       Math.GenerateRandomColor() );
     playerList.push( client.bubble );
 
@@ -165,7 +166,7 @@ const gameCycle = function( tbf ){
 
   // Cycling through Neutral Bubble Decays
   for( let i = neutralList.length - 1; i >= 0; i-- ){
-    if ( BubbleModels.NeutralDecay( neutralList[ i ], tbf ) ){
+    if ( BubbleModels.NeutralCycle( neutralList[ i ], tbf ) ){
       changedList = true;
       newBubbleTally++;
       neutralList.splice( i, 1 );
