@@ -1,0 +1,18 @@
+{
+  "Bubbles": {
+    "Neutral": {
+      "Preset-RGB-Value": 128,
+      "Preset-Alpha-Value": 0.5,
+      "Radius-Set-Min": 0.025,
+      "Radius-Set-Max": 0.05,
+      "Decay-Rate": 0.1,
+      "Velocity-Max": 0.05
+    },
+    "Blooms": {
+      "Preset-Alpha-Value": 0.25,
+      "Radius-Min": 0.015,
+      "Radius-Max": 1.25,
+      "Flation-Rate": 0.1
+    }
+  }
+}

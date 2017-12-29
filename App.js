@@ -1,10 +1,10 @@
 /* --Controller Module-- */
 
   // Helper Math Extensions
-  Math.GenerateRandomColor = function(){
+  Math.GenerateRandomColor = function( a ){
     return "rgba(" + Math.round( Math.random() * 255 ) + ","
-            + Math.round( Math.random() * 255 ) + ","
-            + Math.round( Math.random() * 255 ) + ",0.5)";
+                   + Math.round( Math.random() * 255 ) + ","
+                   + Math.round( Math.random() * 255 ) + "," + a + ")";
   };
 
   // Dependencies
@@ -28,10 +28,11 @@
 
   // Mechanicals
   let lrc;
-  let userJoinCount = 0; // Total joined user tally
+  let userCount = 0;
   let socketList = [];
   let playerList = [];
   let neutralList = [];
+  let bloomsList = [];
   let bubbleList = [];
 
   // Constants
@@ -56,14 +57,14 @@ io.on( 'connection', function( client ){
     // Username appropriate, begin join process
     client.username = data;
     socketList.push( client );
-    userJoinCount++;
+    userCount++;
     client.join( 0 ); // TODO: seperate rooms
     client.emit( 'start' );
 
     // Player's bubble generation, and list insertion
     client.bubble = BubbleModels.PlayerBubble(
       PLAYER_RADIUS, { x: Math.random(), y: Math.random() },
-      Math.GenerateRandomColor() );
+      Math.GenerateRandomColor( 0.5 ) );
     playerList.push( client.bubble );
 
     // Inflate current neutralList
@@ -92,6 +93,8 @@ io.on( 'connection', function( client ){
     if( client.username ){
       socketList.splice( socketList.indexOf( client.username ), 1 );
       client.broadcast.to( 0 ).emit( 'get-message', client.username + " has disconnected." ); // TODO: seperate rooms
+
+      userCount--;
 
       // Remove bubble associated with user
       let ir = playerList.indexOf( client.bubble ); // NOTE: indexOf causes browser compatability errors
@@ -164,24 +167,42 @@ const gameCycle = function( tbf ){
   let changedList = false;
   let newBubbleTally = 0;
 
-  // Cycling through Neutral Bubble Decays
+  // Neutral Cycles
   for( let i = neutralList.length - 1; i >= 0; i-- ){
     if ( BubbleModels.NeutralCycle( neutralList[ i ], tbf ) ){
       changedList = true;
       newBubbleTally++;
+      bloomsList.push( BubbleModels.BloomBubble( neutralList[ i ].rad, neutralList[ i ].baseRad, neutralList[ i ].pos ) );
       neutralList.splice( i, 1 );
     }
   }
 
-  // Arraylist modifications
+  // Blooms Cycle
+  for( let i = bloomsList.length - 1; i >= 0; i-- ){
+    if( bloomsList[ i ].delete ){
+      changedList = true;
+      bloomsList.splice( i, 1 );
+    } else {
+      BubbleModels.BloomCycle( bloomsList[ i ], tbf );
+    }
+  }
+
+  // Postloop Arraylist modification cleanup
   if( changedList ){
     for( let i = 0; i < newBubbleTally; i++ ){
-      neutralList.push( BubbleModels.NeutralBubble() );
+      // Prevent more Neutrals from spawning if above the current limit
+      if( newBubbleTally > ( userCount + 1 ) * BUBBLE_PER_PLAYER ){
+        break;
+      } else {
+        neutralList.push( BubbleModels.NeutralBubble() );
+        newBubbleTally--;
+      }
     }
 
     // Concat all bubble lists only when changes occur
     let bubbleRef = playerList;
-    bubbleList = bubbleRef.concat( neutralList );
+    let bubbleRef2 = bubbleRef.concat( bloomsList );
+    bubbleList = bubbleRef2.concat( neutralList );
   }
 };
 

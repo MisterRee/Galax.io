@@ -19,16 +19,16 @@
     return del( './public/bundle.min.js' );
   });
 
-  // compiling script
-  gulp.task( 'build', function(){
-    return browserify( './src/render.js' )
+  // compile /src/Render.js script
+  gulp.task( 'buildClient', function(){
+    return browserify( './src/Render.js' )
       .transform( "babelify", { presets: ["env"] } )
       .bundle()
-      .pipe( source( 'render.js' ) )
+      .pipe( source( 'Render.js' ) )
       .pipe( buffer() )
       .pipe( uglify() )
       .pipe( rename( 'bundle.min.js' ) )
-      .pipe( gulp.dest( './public' ) )
+      .pipe( gulp.dest( './public' ) );
   });
 
   // restart npm server after building gulp
@@ -46,7 +46,7 @@
 
 // Sequencially runs gulp tasks
 gulp.task( 'reboot', function( done ){
-  runSequence( 'clean', 'build', 'server', function(){
+  runSequence( 'clean', 'buildClient', 'server', function(){
     done();
   });
 });
@@ -56,7 +56,7 @@ gulp.task( 'watch', function(){
   gulp.watch( ['./App.js', './src/**', './public/**'], ['reboot'] );
 });
 
-gulp.task( 'default', ['watch', 'server'] );
+gulp.task( 'default', ['watch', 'reboot'] );
 
 // Clean method for errors
 process.on( 'exit', function(){

@@ -142,6 +142,7 @@ const serverConnect = function(){
       const data = pWritebox.value;
       socket.emit( 'join', data );
     };
+
     pSendbox.addEventListener( 'click', sendPrompt, false );
     socket.on( 'input-reprompt', function(){
       pWritebox.focus();
