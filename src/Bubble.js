@@ -33,18 +33,31 @@ function Bubble( _rad, _crd, _clr ){
 
   // Draw Data
   this.clr = _clr;
+  this.r = 0;
+  this.g = 0;
+  this.b = 0;
 
   // Mechanical
+  this.class = "";
+  this.name = "";
   this.scan = true; // TODO: 'scan' is not descriptive enough
-  this.player = false;
 };
+
+function compileColor( _r, _g, _b, _a ){
+  return "rgba(" + _r + "," + _g + "," + _b + "," + _a + ")";
+}
 
 // Static functions for the controller module to interface with
 module.exports = {
   // Generate Player Bubble Object Preset
-  PlayerBubble: function( _rad, _crd, _clr ){
-    let temp = new Bubble( _rad, _crd, _clr );
-    temp.player = true;
+  PlayerBubble: function( _rad, _crd, _name, _r, _g, _b ){
+    let temp = new Bubble( _rad, _crd,
+      compileColor( _r, _g, _b, 1 ) );
+    temp.r = _r;
+    temp.g = _g;
+    temp.b = _b;
+    temp.class = "player";
+    temp.name = _name;
     return temp;
   },
 
@@ -53,9 +66,13 @@ module.exports = {
     let temp = new Bubble(
       Math.GenerateRandomWithinDomain( MIN_NEUTRAL_RADIUS, MAX_NEUTRAL_RADIUS ),
       { x: Math.random(), y: Math.random() },
-      "rgba(" + NEUTRAL_RGB + "," + NEUTRAL_RGB + "," + NEUTRAL_RGB + "," + NEUTRAL_ALPHA + ")" );
+      compileColor( NEUTRAL_RGB, NEUTRAL_RGB, NEUTRAL_RGB, NEUTRAL_ALPHA ) );
     temp.vel = { x: Math.GenerateRandomWithinDomain( 0, MAX_NEUTRAL_VELOCITY * 2 ) - MAX_NEUTRAL_VELOCITY,
                  y: Math.GenerateRandomWithinDomain( 0, MAX_NEUTRAL_VELOCITY * 2 ) - MAX_NEUTRAL_VELOCITY };
+    temp.r = NEUTRAL_RGB;
+    temp.g = NEUTRAL_RGB;
+    temp.b = NEUTRAL_RGB;
+    temp.class = "neutral";
     return temp;
   },
 
@@ -87,14 +104,15 @@ module.exports = {
   },
 
   // Generate Blooming Bubble Object Preset
-  BloomBubble: function( _startRad, _maxRad, _coord ){
+  BloomBubble: function( pBubble ){
     let temp = new Bubble(
-      _startRad,
-      { x: _coord.x, y: _coord.y },
-      "rgba(" + NEUTRAL_RGB + "," + NEUTRAL_RGB + "," + NEUTRAL_RGB + "," + BLOOM_ALPHA + ")" );
-    temp.baseRad = _maxRad;
+      pBubble.rad,
+      { x: pBubble.pos.x, y: pBubble.pos.y },
+      compileColor( pBubble.r, pBubble.g, pBubble.b, BLOOM_ALPHA ) );
+    temp.baseRad = pBubble.baseRad;
     temp.inflate = true;
     temp.delete = false;
+    temp.class = "bloom";
     return temp;
   },
 
@@ -110,6 +128,23 @@ module.exports = {
         pBubble.rad = pBubble.rad * ( 1 - ( BLOOM_DECAY_RATE * time ) );
       } else {
         pBubble.delete = true;
+      }
+    }
+  },
+
+  // b1 should be a player bubble, and b2 neutral bubbles
+  CollisionScan: function( b1, b2 ){
+    if( b1.class === "player" && b2.class === "neutral" ){
+      if( Math.abs( ( b1.pos.x - b2.pos.x ) * ( b1.pos.x - b2.pos.x ) +
+                    ( b1.pos.y - b2.pos.y ) * ( b1.pos.y - b2.pos.y ) )
+                  < ( b1.rad + b2.rad ) * ( b1.rad + b2.rad ) ){
+        if( b2.name === "" ){
+          b2.name = b1.name;
+          b2.clr = b1.clr;
+          b2.r = b1.r;
+          b2.g = b1.g;
+          b2.b = b1.b;
+        }
       }
     }
   }

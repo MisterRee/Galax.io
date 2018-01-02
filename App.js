@@ -1,10 +1,8 @@
 /* --Controller Module-- */
 
   // Helper Math Extensions
-  Math.GenerateRandomColor = function( a ){
-    return "rgba(" + Math.round( Math.random() * 255 ) + ","
-                   + Math.round( Math.random() * 255 ) + ","
-                   + Math.round( Math.random() * 255 ) + "," + a + ")";
+  Math.GenerateRandomColorValue = function(){
+    return Math.round( Math.random() * 255 );
   };
 
   // Dependencies
@@ -63,8 +61,12 @@ io.on( 'connection', function( client ){
 
     // Player's bubble generation, and list insertion
     client.bubble = BubbleModels.PlayerBubble(
-      PLAYER_RADIUS, { x: Math.random(), y: Math.random() },
-      Math.GenerateRandomColor( 0.5 ) );
+      PLAYER_RADIUS,
+      { x: Math.random(), y: Math.random() },
+      client.username,
+      Math.GenerateRandomColorValue(),
+      Math.GenerateRandomColorValue(),
+      Math.GenerateRandomColorValue() );
     playerList.push( client.bubble );
 
     // Inflate current neutralList
@@ -158,7 +160,6 @@ const gameLoop = function(){
   lrc = now();
 
   gameCycle( delta / 1000 );
-
   setImmediate( gameLoop );
 };
 
@@ -172,7 +173,8 @@ const gameCycle = function( tbf ){
     if ( BubbleModels.NeutralCycle( neutralList[ i ], tbf ) ){
       changedList = true;
       newBubbleTally++;
-      bloomsList.push( BubbleModels.BloomBubble( neutralList[ i ].rad, neutralList[ i ].baseRad, neutralList[ i ].pos ) );
+      bloomsList.push(
+        BubbleModels.BloomBubble( neutralList[ i ] ) );
       neutralList.splice( i, 1 );
     }
   }
@@ -199,10 +201,23 @@ const gameCycle = function( tbf ){
       }
     }
 
+    gameCalculate();
+
     // Concat all bubble lists only when changes occur
     let bubbleRef = playerList;
     let bubbleRef2 = bubbleRef.concat( bloomsList );
     bubbleList = bubbleRef2.concat( neutralList );
+  } else {
+    gameCalculate();
+  }
+};
+
+// Process intensive loop
+const gameCalculate = function(){
+  for( let i = 0; i < playerList.length; i++ ){
+    for( let o = 0; o < neutralList.length; o++ ){
+      BubbleModels.CollisionScan( playerList[ i ], neutralList[ o ] );
+    }
   }
 };
 
