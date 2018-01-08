@@ -242,7 +242,7 @@ const clientLoop = function(){
 // Canvas rendering method
 const clientDraw = function(){
   // Clear frame
-  ctx.fillStyle = "#000";
+  ctx.fillStyle = "black";
   ctx.fillRect( 0, 0, cvsw, cvsh );
 
   if( !gamePacket ){
@@ -253,8 +253,18 @@ const clientDraw = function(){
     if( !gamePacket[ i ].scan ){ // TODO: 'scan' is not descriptive enough
       continue;
     }
+    const temp = gamePacket[ i ];
 
-    Draw( gamePacket[ i ], ctx, cvsw, cvsh );
+    Draw( temp, ctx, cvsw, cvsh );
+
+    if( temp.name && temp.class === "player"){
+      const str = temp.name;
+      const x = Math.round( temp.pos.x * cvsw - ctx.measureText( str ).width / 2 );
+      const y = Math.round( temp.pos.y * cvsh + ctx.measureText( 'M' ).width / 2 ); // NOTE: close vertical height approximation with length of M
+      ctx.fillStyle = "white";
+      ctx.font = "24px Verdana";
+      ctx.fillText( temp.name, x, y );
+    }
   };
 };
 

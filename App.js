@@ -14,7 +14,6 @@
 
   // Routing stuff
   App.use( express.static( __dirname + '/public' ) );
-
   App.get( '/', function( req, res ){
     res.sendFile( __dirname + '/public/client.html' );
   });
@@ -34,6 +33,7 @@
   let bubbleList = [];
 
   // Constants
+  const MAX_USERNAME_LENGTH = 10;
   const PLAYER_RADIUS = 0.05;
   const BUBBLE_PER_PLAYER = 5;
 
@@ -44,6 +44,11 @@ io.on( 'connection', function( client ){
 
   // User attempt to join with a username value
   client.on( 'join', function( data ){
+    // Test if username is longer than designated max length, for security sake
+    if( data.length > MAX_USERNAME_LENGTH ){
+      return;
+    }
+
     // Scan through currently joined users to rject duplicate usernames
     for( let i = 0; i < socketList.length; i++ ){
       if( socketList[ i ].username === data ){

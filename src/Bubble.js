@@ -39,7 +39,6 @@ function Bubble( _rad, _crd, _clr ){
 
   // Mechanical
   this.class = "";
-  this.name = "";
   this.scan = true; // TODO: 'scan' is not descriptive enough
 };
 
@@ -138,7 +137,7 @@ module.exports = {
       if( Math.abs( ( b1.pos.x - b2.pos.x ) * ( b1.pos.x - b2.pos.x ) +
                     ( b1.pos.y - b2.pos.y ) * ( b1.pos.y - b2.pos.y ) )
                   < ( b1.rad + b2.rad ) * ( b1.rad + b2.rad ) ){
-        if( b2.name === "" ){
+        if( b2.name === undefined ){
           b2.name = b1.name;
           b2.clr = b1.clr;
           b2.r = b1.r;
