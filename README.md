@@ -14,6 +14,7 @@ Currently the project is a mutliplayer socket application, using a 2D canvas to 
 * Tight Synchronous Functions in relation to client's framerate, and socket handshake optimizations
 * Multi-user Chat Design & Implementation
 * Cleaner repositiory mangagement with .gitignore
+* Arrow Functions in ES6
 
 #### Stuff To Learn:
 * Lazy-load or Staggered-load with JavaScript/HTML/CSS mix

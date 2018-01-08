@@ -1,7 +1,7 @@
 /* --Controller Module-- */
 
   // Helper Math Extensions
-  Math.GenerateRandomColorValue = function(){
+  Math.GenerateRandomColorValue = () => {
     return Math.round( Math.random() * 255 );
   };
 
@@ -14,7 +14,7 @@
 
   // Routing stuff
   App.use( express.static( __dirname + '/public' ) );
-  App.get( '/', function( req, res ){
+  App.get( '/', ( req, res ) => {
     res.sendFile( __dirname + '/public/client.html' );
   });
   App.set( 'port', process.env.PORT || process.env.NODE_PORT || 3000 );
@@ -39,11 +39,11 @@
 
 // Function which is called when a connection is made to this server
 // All handshakes required with the client is declared within this function
-io.on( 'connection', function( client ){
+io.on( 'connection', ( client ) => {
   console.log( "Client connected!" );
 
   // User attempt to join with a username value
-  client.on( 'join', function( data ){
+  client.on( 'join', ( data ) => {
     // Test if username is longer than designated max length, for security sake
     if( data.length > MAX_USERNAME_LENGTH ){
       return;
@@ -89,14 +89,14 @@ io.on( 'connection', function( client ){
   });
 
   // Broadcast to currently joined users a message
-  client.on( 'post-message', function( data ){
+  client.on( 'post-message', ( data ) => {
     let message = data.sender + ": " + data.value;
     client.emit( 'get-message', message );
     client.broadcast.to( 0 ).emit( 'get-message', message );  // TODO: seperate rooms
   });
 
   // Utility for abrupt disconnects
-  client.on( 'disconnect', function(){
+  client.on( 'disconnect', () => {
     if( client.username ){
       socketList.splice( socketList.indexOf( client.username ), 1 );
       client.broadcast.to( 0 ).emit( 'get-message', client.username + " has disconnected." ); // TODO: seperate rooms
@@ -124,11 +124,11 @@ io.on( 'connection', function( client ){
   });
 
   // Called during game frame loops
-  client.on( 'pull-gamedata', function(){
+  client.on( 'pull-gamedata', () => {
     client.emit( 'get-gamedata', bubbleList );
   });
 
-  client.on( 'push-mousedata', function( data ){
+  client.on( 'push-mousedata', ( data ) => {
     // Scan through existing data list
     for( let i = 0; i < socketList.length; i++ ){
       if( socketList[ i ].username === data.u ){
@@ -145,7 +145,7 @@ io.on( 'connection', function( client ){
 });
 
 // Game Setup
-const gameInit = function(){
+const gameInit = () => {
   for( let i = 0; i < BUBBLE_PER_PLAYER; i++ ){
     neutralList.push( BubbleModels.NeutralBubble() );
   }
@@ -155,7 +155,7 @@ const gameInit = function(){
 };
 
 // Game Loop which records frame timings
-const gameLoop = function(){
+const gameLoop = () => {
   if( !lrc ){
     lrc = now();
     setImmediate( gameLoop );
@@ -169,7 +169,7 @@ const gameLoop = function(){
 };
 
 // Game Calculations, sensitive to frame timings
-const gameCycle = function( tbf ){
+const gameCycle = ( tbf ) => {
   let changedList = false;
   let newBubbleTally = 0;
 
@@ -218,7 +218,7 @@ const gameCycle = function( tbf ){
 };
 
 // Process intensive loop
-const gameCalculate = function(){
+const gameCalculate = () =>{
   for( let i = 0; i < playerList.length; i++ ){
     for( let o = 0; o < neutralList.length; o++ ){
       BubbleModels.CollisionScan( playerList[ i ], neutralList[ o ] );

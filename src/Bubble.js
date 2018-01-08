@@ -1,7 +1,7 @@
 /* --Model Module-- */
 
   // Helper Math Extension
-  Math.GenerateRandomWithinDomain = function( min, max ){
+  Math.GenerateRandomWithinDomain = ( min, max ) => {
     return Math.random() * ( max - min ) + min;
   }
 

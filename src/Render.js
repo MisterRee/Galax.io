@@ -1,7 +1,7 @@
 /* --View Module-- */
 
   // Helper
-  const Draw = function( _bub, _ctx, _cvsw, _cvsh ){
+  const Draw = ( _bub, _ctx, _cvsw, _cvsh ) => {
    _ctx.fillStyle = _bub.clr;
    _ctx.beginPath();
    _ctx.ellipse(
@@ -29,7 +29,7 @@
   let username, gamePacket;
 
 // Dynamic CSS value resets
-const windowResize = function(){
+const windowResize = () => {
   // Set UI elements to current window size
   let width = window.innerWidth
            || document.documentElement.clientWidth
@@ -48,17 +48,17 @@ const windowResize = function(){
   cvsh = ctx.canvas.height;
 };
 
-const chatFocusToggleOn = function(){
+const chatFocusToggleOn = () => {
   if( !chatwrap.classList.contains( "focused" ) ){
     chatwrap.classList += "focused";
   }
 };
 
-const chatFocusToggleOff = function(){
+const chatFocusToggleOff = () => {
   chatwrap.classList.remove( "focused" );
 };
 
-const cvsMouseOver = function( e ){
+const cvsMouseOver = ( e ) => {
   // Since events can fire off faster than frames
   // Prevent more than one data push between one effective frame
   if( !mdr || !connection ){
@@ -80,7 +80,7 @@ const cvsMouseOver = function( e ){
 // Indicates that user's mouse is currently off the play canvas
 // Prevents the user's bubble from being drawn
 // TODO: This might interfere with future collision detection
-const cvsMouseOut = function( e ){
+const cvsMouseOut = ( e ) => {
   // MouseOut event is not limited to Synchronious framerate
   if( !connection ){
     return;
@@ -95,7 +95,7 @@ const cvsMouseOut = function( e ){
   socket.emit( 'push-mousedata', mec );
 };
 
-const init = function(){
+const init = () => {
   // Set References
   cvs = document.querySelector( 'canvas' );
   ctx = cvs.getContext( '2d' );
@@ -125,7 +125,7 @@ const init = function(){
 };
 
  // Starts socket engine
-const serverConnect = function(){
+const serverConnect = () => {
   if( connection ){ // No need to reconnect
     return;
   }
@@ -133,18 +133,18 @@ const serverConnect = function(){
   socket = io.connect();
 
     // Swap off loading phase
-    socket.on( 'connect', function(){
+    socket.on( 'connect', () => {
       document.querySelector( '#loader-wrapper' ).classList += "loaded";
     });
 
     // Setup for possible reprompting user in case of input error
-    const sendPrompt = function(){
+    const sendPrompt = () => {
       const data = pWritebox.value;
       socket.emit( 'join', data );
     };
 
     pSendbox.addEventListener( 'click', sendPrompt, false );
-    socket.on( 'input-reprompt', function(){
+    socket.on( 'input-reprompt', () => {
       pWritebox.focus();
 
       if( pWarningbox.classList ){
@@ -153,7 +153,7 @@ const serverConnect = function(){
 
         if( !warningBlock ){
           warningBlock = true;
-          setTimeout( function(){
+          setTimeout( () => {
             warningBlock = false;
             pWarningbox.classList += "dormant";
           }, 2000 );
@@ -162,7 +162,7 @@ const serverConnect = function(){
     });
 
     // Swap on into game phase
-    socket.on( 'start', function(){
+    socket.on( 'start', () => {
       connection = true;
       username = pWritebox.value;
       document.querySelector( '#prompt-wrapper' ).classList += "done";
@@ -171,12 +171,12 @@ const serverConnect = function(){
     });
 
     // Post message to chat
-    socket.on( 'get-message', function( data ){
+    socket.on( 'get-message', ( data ) => {
       textarea.value += '\n' + data;
     });
 
     // Feed from data stream
-    socket.on( 'get-gamedata', function( data ){
+    socket.on( 'get-gamedata', ( data ) => {
       gamePacket = data;
     });
 
@@ -185,7 +185,7 @@ const serverConnect = function(){
 };
 
 // For enter key event
-const handleKeyPress = function( e ){
+const handleKeyPress = ( e ) => {
   if( connection ){
     // Any key press will focus into the chatbox
     cWritebox.focus();
@@ -206,7 +206,7 @@ const handleKeyPress = function( e ){
 };
 
 // Prompting server to send message to everyone in the room
-const postMessage = function(){
+const postMessage = () => {
   if( !cWritebox.value ){
     return;
   }
@@ -216,7 +216,7 @@ const postMessage = function(){
 };
 
 // Loop starts once game state begins, Synchroniously paced game loop
-const clientLoop = function(){
+const clientLoop = () => {
   // First iteration detection
   if( !lrc ){
     lrc = now();
@@ -240,7 +240,7 @@ const clientLoop = function(){
 };
 
 // Canvas rendering method
-const clientDraw = function(){
+const clientDraw = () => {
   // Clear frame
   ctx.fillStyle = "black";
   ctx.fillRect( 0, 0, cvsw, cvsh );
