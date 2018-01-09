@@ -1,29 +1,36 @@
 /* --View Module-- */
 
   // Helper
-  const Draw = ( _bub, _ctx, _cvsw, _cvsh ) => {
+  const Draw = ( _bub, _ctx, _canvasWidth, _canvasHeight ) => {
    _ctx.fillStyle = _bub.clr;
    _ctx.beginPath();
    _ctx.ellipse(
-     _bub.pos.x * _cvsw,
-     _bub.pos.y * _cvsh,
-     _bub.rad * _cvsw,
-     _bub.rad * _cvsh,
+     _bub.pos.x * _canvasWidth,
+     _bub.pos.y * _canvasHeight,
+     _bub.rad * _canvasWidth,
+     _bub.rad * _canvasHeight,
      0, 0, Math.PI * 2 );
      _ctx.fill();
+  };
+
+  const DrawMouse = ( _ctx, _canvasWidth, _canvasHeight ) => {
+    _ctx.fillStyle = "white";
+    _ctx.ellipse(
+
+    )
   };
 
   // Dependencies
   const now = require( 'performance-now' );
 
    // Engines
-  let socket, cvs, ctx;
+  let socket, cvs, ctx; // canvas and context respectively
 
    // HTML Elements & UI References
   let chatwrap, textarea, cWritebox, cSendbox, pWritebox, pSendbox, pWarningbox;
 
-   // Mechanics
-  let cvsw, cvsh, tbr, lrc, mdr, mec;
+   // mouseDataPackagehanics
+  let canvasWidth, canvasHeight, timeBetweenFrame, currentTimeMeasure, mouseDrawFrame, mouseDataPackage;
   let connection = false;
   let warningBlock = false;
   let username, gamePacket;
@@ -44,8 +51,8 @@ const windowResize = () => {
                   || document.documentElement.clientHeight
                   || document.body.clientHeight;
 
-  cvsw = ctx.canvas.width;
-  cvsh = ctx.canvas.height;
+  canvasWidth = ctx.canvas.width;
+  canvasHeight = ctx.canvas.height;
 };
 
 const chatFocusToggleOn = () => {
@@ -61,20 +68,20 @@ const chatFocusToggleOff = () => {
 const cvsMouseOver = ( e ) => {
   // Since events can fire off faster than frames
   // Prevent more than one data push between one effective frame
-  if( !mdr || !connection ){
+  if( !mouseDrawFrame || !connection ){
     return;
   }
-  mdr = false;
+  mouseDrawFrame = false;
 
   const rect = cvs.getBoundingClientRect();
 
-  mec = {
+  mouseDataPackage = {
    u: username,
    d: true,
-   p: { x: ( e.clientX - rect.x ) / cvsw, y: ( e.clientY - rect.y ) / cvsh }
+   p: { x: ( e.clientX - rect.x ) / canvasWidth, y: ( e.clientY - rect.y ) / canvasHeight }
   };
 
-   socket.emit( 'push-mousedata', mec );
+   socket.emit( 'push-mousedata', mouseDataPackage );
 };
 
 // Indicates that user's mouse is currently off the play canvas
@@ -85,14 +92,14 @@ const cvsMouseOut = ( e ) => {
   if( !connection ){
     return;
   }
-  mdr = false;
+  mouseDrawFrame = false;
 
-  mec = {
+  mouseDataPackage = {
     u: username,
     d: false
   };
 
-  socket.emit( 'push-mousedata', mec );
+  socket.emit( 'push-mousedata', mouseDataPackage );
 };
 
 const init = () => {
@@ -107,7 +114,7 @@ const init = () => {
   pSendbox    = document.querySelector( '#prompt-sendbox' );
   pWarningbox = document.querySelector( '#prompt-warning' )
 
-  // Mechanical Setup
+  // mouseDataPackagehanical Setup
   windowResize();
   window.onresize = windowResize;
   cSendbox.addEventListener( 'click', postMessage, false );
@@ -166,7 +173,7 @@ const serverConnect = () => {
       connection = true;
       username = pWritebox.value;
       document.querySelector( '#prompt-wrapper' ).classList += "done";
-      tbr = 0;
+      timeBetweenFrame = 0;
       clientLoop();
     });
 
@@ -218,19 +225,19 @@ const postMessage = () => {
 // Loop starts once game state begins, Synchroniously paced game loop
 const clientLoop = () => {
   // First iteration detection
-  if( !lrc ){
-    lrc = now();
+  if( !currentTimeMeasure ){
+    currentTimeMeasure = now();
     requestAnimationFrame( clientLoop );
     return;
   }
 
-  // Switch to only allow one mouse data emission to the server during active frame
-  mdr = true;
+  // Switch to only allow one mouse data push to the server during the active frame
+  mouseDrawFrame = true;
 
   // Calculating time between frames to incorporate into framing the draw
-  let delta = ( now() - lrc );
-  lrc = now();
-  tbr = delta / 1000;
+  let delta = ( now() - currentTimeMeasure );
+  currentTimeMeasure = now();
+  timeBetweenFrame = delta / 1000;
 
   // Frame by frame functions here!
   socket.emit( 'pull-gamedata' );
@@ -243,24 +250,24 @@ const clientLoop = () => {
 const clientDraw = () => {
   // Clear frame
   ctx.fillStyle = "black";
-  ctx.fillRect( 0, 0, cvsw, cvsh );
+  ctx.fillRect( 0, 0, canvasWidth, canvasHeight );
 
   if( !gamePacket ){
     return;
   };
 
   for( let i = 0; i < gamePacket.length; i++ ){
-    if( !gamePacket[ i ].scan ){ // TODO: 'scan' is not descriptive enough
+    if( gamePacket[ i ].disable ){
       continue;
     }
     const temp = gamePacket[ i ];
 
-    Draw( temp, ctx, cvsw, cvsh );
+    Draw( temp, ctx, canvasWidth, canvasHeight );
 
     if( temp.name && temp.class === "player"){
       const str = temp.name;
-      const x = Math.round( temp.pos.x * cvsw - ctx.measureText( str ).width / 2 );
-      const y = Math.round( temp.pos.y * cvsh + ctx.measureText( 'M' ).width / 2 ); // NOTE: close vertical height approximation with length of M
+      const x = Math.round( temp.pos.x * canvasWidth - ctx.measureText( str ).width / 2 );
+      const y = Math.round( temp.pos.y * canvasHeight + ctx.measureText( 'M' ).width / 2 ); // NOTE: close vertical height approximation with length of M
       ctx.fillStyle = "white";
       ctx.font = "24px Verdana";
       ctx.fillText( temp.name, x, y );

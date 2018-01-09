@@ -39,7 +39,7 @@ function Bubble( _rad, _crd, _clr ){
 
   // Mechanical
   this.class = "";
-  this.scan = true; // TODO: 'scan' is not descriptive enough
+  this.disable = false;
 };
 
 function compileColor( _r, _g, _b, _a ){

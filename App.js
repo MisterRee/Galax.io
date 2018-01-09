@@ -24,7 +24,7 @@
   const BubbleModels = require( './src/Bubble.js' );
 
   // Mechanicals
-  let lrc;
+  let currentTimeMeasure;
   let userCount = 0;
   let socketList = [];
   let playerList = [];
@@ -133,9 +133,9 @@ io.on( 'connection', ( client ) => {
     for( let i = 0; i < socketList.length; i++ ){
       if( socketList[ i ].username === data.u ){
         if( !data.d ){
-          socketList[ i ].bubble.scan = false; // TODO: 'scan' is not descriptive enough
+          socketList[ i ].bubble.disable = true;
         } else {
-          socketList[ i ].bubble.scan = true;
+          socketList[ i ].bubble.disable = false;
           socketList[ i ].bubble.pos  = data.p;
           return;
         }
@@ -156,13 +156,13 @@ const gameInit = () => {
 
 // Game Loop which records frame timings
 const gameLoop = () => {
-  if( !lrc ){
-    lrc = now();
+  if( !currentTimeMeasure ){
+    currentTimeMeasure = now();
     setImmediate( gameLoop );
   }
 
-  let delta = ( now() - lrc );
-  lrc = now();
+  let delta = ( now() - currentTimeMeasure );
+  currentTimeMeasure = now();
 
   gameCycle( delta / 1000 );
   setImmediate( gameLoop );
