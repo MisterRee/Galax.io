@@ -5,6 +5,11 @@
     return Math.random() * ( max - min ) + min;
   }
 
+  const compileColor = ( _r, _g, _b, _a ) => {
+    return "rgba(" + _r + "," + _g + "," + _b + "," + _a + ")";
+  }
+
+
   // Neutral Constants
   const NEUTRAL_RGB = 128;
   const NEUTRAL_ALPHA = 0.5;
@@ -42,14 +47,10 @@ function Bubble( _rad, _crd, _clr ){
   this.disable = false;
 };
 
-function compileColor( _r, _g, _b, _a ){
-  return "rgba(" + _r + "," + _g + "," + _b + "," + _a + ")";
-}
-
 // Static functions for the controller module to interface with
 module.exports = {
   // Generate Player Bubble Object Preset
-  PlayerBubble: function( _rad, _crd, _name, _r, _g, _b ){
+  PlayerBubble: ( _rad, _crd, _name, _r, _g, _b ) =>{
     let temp = new Bubble( _rad, _crd,
       compileColor( _r, _g, _b, 1 ) );
     temp.r = _r;
@@ -61,7 +62,7 @@ module.exports = {
   },
 
   // Generate Neutral Bubble Object Preset
-  NeutralBubble: function(){
+  NeutralBubble: () =>{
     let temp = new Bubble(
       Math.GenerateRandomWithinDomain( MIN_NEUTRAL_RADIUS, MAX_NEUTRAL_RADIUS ),
       { x: Math.random(), y: Math.random() },
@@ -76,7 +77,7 @@ module.exports = {
   },
 
   // Helper function to cycle through Neutral Bubble Shrinking Process
-  NeutralCycle: function( pBubble, time ){
+  NeutralCycle: ( pBubble, time ) => {
     pBubble.pos.x += pBubble.vel.x * time;
     pBubble.pos.y += pBubble.vel.y * time;
 
@@ -103,7 +104,7 @@ module.exports = {
   },
 
   // Generate Blooming Bubble Object Preset
-  BloomBubble: function( pBubble ){
+  BloomBubble: ( pBubble ) => {
     let temp = new Bubble(
       pBubble.rad,
       { x: pBubble.pos.x, y: pBubble.pos.y },
@@ -115,7 +116,7 @@ module.exports = {
     return temp;
   },
 
-  BloomCycle: function( pBubble, time ){
+  BloomCycle: ( pBubble, time ) => {
     if( pBubble.inflate ){
       if( pBubble.rad < pBubble.baseRad * MAX_BLOOM_RADIUS ){
         pBubble.rad = pBubble.rad * ( 1 + ( BLOOM_DECAY_RATE * time ) );
@@ -132,17 +133,17 @@ module.exports = {
   },
 
   // b1 should be a player bubble, and b2 neutral bubbles
-  CollisionScan: function( b1, b2 ){
+  CollisionScan: ( b1, b2 ) => {
     if( b1.class === "player" && b2.class === "neutral" ){
       if( Math.abs( ( b1.pos.x - b2.pos.x ) * ( b1.pos.x - b2.pos.x ) +
                     ( b1.pos.y - b2.pos.y ) * ( b1.pos.y - b2.pos.y ) )
                   < ( b1.rad + b2.rad ) * ( b1.rad + b2.rad ) ){
         if( b2.name === undefined ){
           b2.name = b1.name;
-          b2.clr = b1.clr;
           b2.r = b1.r;
           b2.g = b1.g;
           b2.b = b1.b;
+          b2.clr = compileColor( b1.r, b1.g, b1.b, NEUTRAL_ALPHA );
         }
       }
     }

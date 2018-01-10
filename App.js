@@ -26,11 +26,11 @@
   // Mechanicals
   let currentTimeMeasure;
   let userCount = 0;
-  let socketList = [];
-  let playerList = [];
-  let neutralList = [];
+  let socketList = []; // Every connected socket data within a list
+  let bubbleList = []; // Double Array holding data from below
   let bloomsList = [];
-  let bubbleList = [];
+  let neutralList = [];
+  let playerList = [];
 
   // Constants
   const MAX_USERNAME_LENGTH = 10;
@@ -78,11 +78,7 @@ io.on( 'connection', ( client ) => {
     for( let i = 0; i < BUBBLE_PER_PLAYER; i++ ){
       neutralList.push( BubbleModels.NeutralBubble() );
     }
-
-    // Concat all bubble lists only when changes occur
-    let bubbleRef = playerList;
-    bubbleList = bubbleRef.concat( neutralList );
-
+    
     // Entry feedback
     client.emit( 'get-message', "Welcome to the Chatroom, " + client.username );
     client.broadcast.to( 0 ).emit( 'get-message', client.username + " has connected." );  // TODO: seperate rooms
@@ -109,10 +105,6 @@ io.on( 'connection', ( client ) => {
         playerList.splice( ir, 1 );
       }
 
-      // Concat all bubble lists only when changes occur
-      let bubbleRef = playerList;
-      bubbleList = bubbleRef.concat( neutralList );
-
       // Scan through existing data list, then remove user
       for( let i = socketList.length - 1; i >= 0; i-- ){
         if( socketList[ i ].username === client.username ){
@@ -136,7 +128,7 @@ io.on( 'connection', ( client ) => {
           socketList[ i ].bubble.disable = true;
         } else {
           socketList[ i ].bubble.disable = false;
-          socketList[ i ].bubble.pos  = data.p;
+          socketList[ i ].bubble.pos = data.p;
           return;
         }
       }
@@ -146,6 +138,11 @@ io.on( 'connection', ( client ) => {
 
 // Game Setup
 const gameInit = () => {
+  // Setting up bubbleList references
+  bubbleList[ 0 ] = bloomsList;
+  bubbleList[ 1 ] = neutralList;
+  bubbleList[ 2 ] = playerList;
+
   for( let i = 0; i < BUBBLE_PER_PLAYER; i++ ){
     neutralList.push( BubbleModels.NeutralBubble() );
   }
@@ -208,10 +205,6 @@ const gameCycle = ( tbf ) => {
 
     gameCalculate();
 
-    // Concat all bubble lists only when changes occur
-    let bubbleRef = playerList;
-    let bubbleRef2 = bubbleRef.concat( bloomsList );
-    bubbleList = bubbleRef2.concat( neutralList );
   } else {
     gameCalculate();
   }
