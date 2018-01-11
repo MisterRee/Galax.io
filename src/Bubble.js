@@ -9,8 +9,15 @@
     return "rgba(" + _r + "," + _g + "," + _b + "," + _a + ")";
   }
 
+  // Dependencies
+  const Victor = require( 'victor' );
 
-  // Neutral Constants
+  // Game Constants
+  const PLAYER_MAX_MOUSE_DISTANCE_FORCE_RATIO = 0.4;
+  const PLAYER_FORCE_COEFFICIENT = 0;
+  const PLAYER_MAX_VELOCITY = 0.25;
+  const PLAYER_MAX_FORCE = 0.000005;
+
   const NEUTRAL_RGB = 128;
   const NEUTRAL_ALPHA = 0.5;
   const MIN_NEUTRAL_RADIUS = 0.025;
@@ -19,6 +26,7 @@
   const MIN_NEUTRAL_DECAY_RATE = 0.005;
   const MAX_NEUTRAL_DECAY_RATE = 0.05;
   const MAX_NEUTRAL_VELOCITY = 0.05;
+
   const BLOOM_ALPHA = 0.25;
   const MIN_BLOOM_RADIUS = 0.2;
   const MAX_BLOOM_RADIUS = 1.25;
@@ -33,8 +41,8 @@ function Bubble( _rad, _crd, _clr ){
 
   // Physics, values between 0 - 1 as floats
   this.pos = { x: _crd.x, y: _crd.y };
-  this.vel = { x: 0,     y: 0 };
-  this.acl = { x: 0,     y: 0 };
+  this.vel = new Victor( 0, 0 );
+  this.frc = new Victor( 0, 0 );
 
   // Draw Data
   this.clr = _clr;
@@ -58,7 +66,47 @@ module.exports = {
     temp.b = _b;
     temp.class = "player";
     temp.name = _name;
+    temp.mPos = { x: 0, y: 0 };
     return temp;
+  },
+
+  PlayerCycle: ( pBubble, time ) => {
+    if( !pBubble.mPos || pBubble.disable ){
+      return;
+    }
+
+    let tempM = new Victor( pBubble.mPos.x, pBubble.mPos.y );
+    let tempB = new Victor( pBubble.pos.x, pBubble.pos.y );
+    tempB.subtract( tempM );
+
+    if( tempB.length() > PLAYER_MAX_MOUSE_DISTANCE_FORCE_RATIO ){
+      tempB.normalize();
+    } else {
+      tempB.divide( new Victor( PLAYER_MAX_MOUSE_DISTANCE_FORCE_RATIO, PLAYER_MAX_MOUSE_DISTANCE_FORCE_RATIO ) );
+    }
+
+    // NOTE multiply this by a determined c
+    tempB.divide( new Victor( time, time ) );
+
+    pBubble.frc.add( tempB );
+    if( pBubble.frc.length() > PLAYER_MAX_FORCE ){
+      pBubble.frc.normalize().multiply( new Victor( PLAYER_MAX_FORCE, PLAYER_MAX_FORCE ) );
+    }
+
+    pBubble.vel.subtract( pBubble.frc );
+    if( pBubble.vel.length() > PLAYER_MAX_VELOCITY ){
+      pBubble.vel.normalize().multiply( new Victor( PLAYER_MAX_VELOCITY, PLAYER_MAX_VELOCITY ) );
+    }
+
+    pBubble.pos.x += pBubble.vel.x * time;
+    pBubble.pos.y += pBubble.vel.y * time;
+
+    if( pBubble.pos.x < 0 ||
+        pBubble.pos.x > 1 ||
+        pBubble.pos.y < 0 ||
+        pBubble.pos.y > 1 ){
+      pBubble.pos = { x: 0.5, y: 0.5 };
+    }
   },
 
   // Generate Neutral Bubble Object Preset

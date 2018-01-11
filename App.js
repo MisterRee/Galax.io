@@ -78,7 +78,7 @@ io.on( 'connection', ( client ) => {
     for( let i = 0; i < BUBBLE_PER_PLAYER; i++ ){
       neutralList.push( BubbleModels.NeutralBubble() );
     }
-    
+
     // Entry feedback
     client.emit( 'get-message', "Welcome to the Chatroom, " + client.username );
     client.broadcast.to( 0 ).emit( 'get-message', client.username + " has connected." );  // TODO: seperate rooms
@@ -128,7 +128,7 @@ io.on( 'connection', ( client ) => {
           socketList[ i ].bubble.disable = true;
         } else {
           socketList[ i ].bubble.disable = false;
-          socketList[ i ].bubble.pos = data.p;
+          socketList[ i ].bubble.mPos = data.p;
           return;
         }
       }
@@ -169,6 +169,11 @@ const gameLoop = () => {
 const gameCycle = ( tbf ) => {
   let changedList = false;
   let newBubbleTally = 0;
+
+  // Player Cycles
+  for( let i in playerList ){
+    BubbleModels.PlayerCycle( playerList[ i ], tbf );
+  }
 
   // Neutral Cycles
   for( let i = neutralList.length - 1; i >= 0; i-- ){
